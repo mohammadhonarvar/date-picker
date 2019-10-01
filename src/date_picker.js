@@ -9,6 +9,9 @@ class DatePicker extends Component {
       // week days to show for current state
       weeksDays: [[], [], [], [], [], []],
 
+      // picking years array
+      yearsToShow: [],
+
       // user selected date
       selectedDate: [0, 0, 0],
 
@@ -37,6 +40,9 @@ class DatePicker extends Component {
       { name: 'December', code: 5, shortName: 'Dec' }
     ];
 
+    // this.minYear = 1920;
+    // this.maxYear = 2020;
+
     // current showing month
     this.currentMonth = 0;
 
@@ -45,6 +51,9 @@ class DatePicker extends Component {
 
     // is this.currentYear is leap
     this.isLeapYear = 0;
+
+    this.minShowYear = 0;
+    this.maxShowYear = 0;
 
     // set weeksDays to show calculated days
     this.state.weeksDays = this._calculateMonthDays(this.currentMonth);
@@ -117,6 +126,13 @@ class DatePicker extends Component {
       else this.currentYear--;
       this.forceUpdate();
       return;
+    } else if (this.state.view === 2) {
+      this._calculateYears(next);
+      return;
+    }
+    else if (this.state.view === 3) {
+      console.log(3);
+      return;
     }
 
     if (next)
@@ -143,12 +159,49 @@ class DatePicker extends Component {
     });
   }
 
+  _calculateYears = (nextYearList) => {
+
+    let tempYears = [];
+    let startYear, endYear;
+    if (nextYearList === undefined) {
+      startYear = this.currentYear - this.currentYear % 10;
+      endYear = startYear + 10;
+    } else if (nextYearList) {
+      startYear = this.state.yearsToShow[9] + 1;
+      endYear = startYear + 10;
+    } else {
+      startYear = this.state.yearsToShow[0] - 10;
+      endYear = this.state.yearsToShow[0];
+    }
+    this.minShowYear = startYear;
+    this.maxShowYear = endYear - 1;
+    for (let index = startYear; index < endYear; index++) {
+      tempYears.push(index);
+    }
+    this.setState({ yearsToShow: tempYears });
+  }
+
+  _changeView = (nextView = false) => {
+    if (this.state.view === 3) return;
+    this.setState({
+      view: nextView ? this.state.view + 1 : this.state.view - 1,
+    })
+    if (this.state.view + 1 === 2) {
+      this._calculateYears();
+    }
+  }
+
+  pickYear = (year) => {
+    this.currentYear = year;
+    this._changeView();
+  }
+
   pickMonth = (monthIndex) => {
     this.currentMonth = monthIndex;
     let tempWeekDays = this._calculateMonthDays(monthIndex);
+    this._changeView();
     this.setState({
       weeksDays: tempWeekDays,
-      view: 0,
     });
   }
 
@@ -164,57 +217,62 @@ class DatePicker extends Component {
       <div className="date-picker" >
         <div className="header">
           <div onClick={() => this.arrowCall(false)} className="arrow-prev"></div>
-          <h4 className="header-text" onClick={() => {
-            this.setState({
-              view: this.state.view + 1,
-            })
-          }}>
+          <h4 className="header-text" onClick={() => this._changeView(true)}>
             {
               this.state.view === 0 ?
                 `${this.monthDaysName[this.currentMonth].name} ${this.currentYear}` :
-                `${this.currentYear}`
+                this.state.view === 1 ?
+                  this.currentYear : this.state.view === 2 ? `${this.minShowYear} - ${this.maxShowYear}` : ''
             }
           </h4>
           <div onClick={() => this.arrowCall(true)} className="arrow-next"></div>
         </div>
         {
-          this.state.view === 1 ? <div className="month-list">
+          this.state.view === 0 ? <div>
+            <div className="week-days">
+              <span>Sun</span>
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span>Sat</span>
+            </div>
+            <div className="month-days">
+              {
+                this.state.weeksDays.map((week, index) => {
+                  return (
+                    <div key={index} className="week-row">
+                      {
+                        this.state.weeksDays[index].map((weekDay) => {
+                          const date = this.state.selectedDate;
+                          const isSelected = this.currentYear === date[0] && this.currentMonth === date[1] && weekDay === date[2];
+                          const isNotInThisMonth = (index === 0 && weekDay > 7) || ((index === 5 || index === 4) && weekDay < 21);
+                          return <div key={'week' + index + '-' + weekDay} onClick={isNotInThisMonth ? null : () => this.pickDay(weekDay)} className={`day-item ${isSelected && !isNotInThisMonth ? 'selected' : ''} ${isNotInThisMonth ? 'fade' : ''}`} >{weekDay}</div>;
+                        })
+                      }
+                    </div>
+                  )
+                })
+              }
+            </div>
+          </div> : this.state.view === 1 ? <div className="month-list">
             {
               this.monthDaysName.map((month, index) => {
                 return (
-                  <div key={month.shortName} onClick={() => { this.pickMonth(index); }}>{month.shortName}</div>
+                  <div key={month.shortName} className={this.currentMonth === index ? 'selected' : ''} onClick={() => { this.pickMonth(index); }}>{month.shortName}</div>
                 )
               })
             }
-          </div> : <div>
-              <div className="week-days">
-                <span>Sun</span>
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-              </div>
-              <div className="month-days">
-                {
-                  this.state.weeksDays.map((week, index) => {
-                    return (
-                      <div key={index} className="week-row">
-                        {
-                          this.state.weeksDays[index].map((weekDay) => {
-                            const date = this.state.selectedDate;
-                            const isSelected = this.currentYear === date[0] && this.currentMonth === date[1] && weekDay === date[2];
-                            const isNotInThisMonth = (index === 0 && weekDay > 7) || ((index === 5 || index === 4) && weekDay < 21);
-                            return <div key={'week' + index + '-' + weekDay} onClick={isNotInThisMonth ? null : () => this.pickDay(weekDay)} className={`day-item ${isSelected && !isNotInThisMonth ? 'selected' : ''} ${isNotInThisMonth ? 'fade' : ''}`} >{weekDay}</div>;
-                          })
-                        }
-                      </div>
-                    )
-                  })
-                }
-              </div>
-            </div>
+          </div> : this.state.view === 2 ? <div className="year-list">
+            {
+              this.state.yearsToShow.map((year) => {
+                return (
+                  <div key={year} className={this.currentYear === year ? 'selected' : ''} onClick={() => { this.pickYear(year); }}>{year}</div>
+                )
+              })
+            } </div>
+                : this.state.view === 3 ? <p>Show Decades</p> : null
         }
         <div className="show-date">
           <h5>Pick Time</h5>

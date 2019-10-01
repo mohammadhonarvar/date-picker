@@ -77,12 +77,14 @@
   text-align: center;
 }
 
+.year-list,
 .month-list {
   display: flex;
   flex-flow: row wrap;
   padding: 12px 0;
 }
 
+.year-list div,
 .month-list div {
   flex-grow: 10;
   width: 84px;
@@ -93,9 +95,16 @@
   margin: 0 8px;
 }
 
-.month-list div:hover {
+.month-list div:hover,
+.year-list div:hover {
   color: #7C4DFF;
   background: rgba(124, 77, 255, 0.2);
+}
+
+.year-list .selected,
+.month-list .selected {
+  background: #7C4DFF;
+  color: #FFFFFF;
 }
 
 /* .day-item .background-bubble {
