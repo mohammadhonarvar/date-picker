@@ -6,54 +6,81 @@ class DatePicker extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      // week days to show for current state
       weeksDays: [[], [], [], [], [], []],
-      date: [0, 0, 0],
-    };
-    this.monthIndex = 0;
-    this.currentYear = 2019;
-    this.monthDaysName = [
-      { name: 'January', code: 0 },
-      { name: 'February', code: 3 },
-      { name: 'March', code: 3 },
-      { name: 'April', code: 6 },
-      { name: 'May', code: 1 },
-      { name: 'Jun', code: 4 },
-      { name: 'July', code: 6 },
-      { name: 'August', code: 2 },
-      { name: 'September', code: 5 },
-      { name: 'October', code: 0 },
-      { name: 'November', code: 3 },
-      { name: 'December', code: 5 }
-    ];
-    this.isLeapYear = 0;
-    this.state.weeksDays = this._calculateMonthDays(undefined, 0);
 
-    this._calculateWeekDay(this.currentYear, 1);
+      // user selected date
+      selectedDate: [0, 0, 0],
+
+      // views:
+      // 0: days,
+      // 1: months,
+      // 2: years,
+      // 3: year ranges,
+      view: 0,
+    };
+
+    // list of month names with short name and codes*
+    // *codes: used for f:_calculateWeekDay
+    this.monthDaysName = [
+      { name: 'January', code: 0, shortName: 'Jan' },
+      { name: 'February', code: 3, shortName: 'Feb' },
+      { name: 'March', code: 3, shortName: 'Mar' },
+      { name: 'April', code: 6, shortName: 'Apr' },
+      { name: 'May', code: 1, shortName: 'May' },
+      { name: 'Jun', code: 4, shortName: 'Jun' },
+      { name: 'July', code: 6, shortName: 'Jul' },
+      { name: 'August', code: 2, shortName: 'Aug' },
+      { name: 'September', code: 5, shortName: 'Sep' },
+      { name: 'October', code: 0, shortName: 'Oct' },
+      { name: 'November', code: 3, shortName: 'Nov' },
+      { name: 'December', code: 5, shortName: 'Dec' }
+    ];
+
+    // current showing month
+    this.currentMonth = 0;
+
+    // current showing year
+    this.currentYear = 2019;
+
+    // is this.currentYear is leap
+    this.isLeapYear = 0;
+
+    // set weeksDays to show calculated days
+    this.state.weeksDays = this._calculateMonthDays(this.currentMonth);
   }
 
-  _calculateWeekDay(year, day) {
+  // sunday: 0
+  // eg: 2019.1.1 was Tuesday so since sunday is 0:
+  // _calculateWeekDay(2019, 1, 1) -> 2 (sun:0, mon: 1, Tue: 2)
+  _calculateWeekDay(year, month, day) {
+
+    // Calculate Century, Year, Month and Day Code
     const yearDate = year % 100;
     const yearCentury = Math.floor(year / 100);
     const centuryCodes = [4, 2, 0, 6];
     const calcCenturyCode = yearCentury % 4;
     const centuryCode = centuryCodes[calcCenturyCode === 0 ? 3 : calcCenturyCode - 1];
     const yearCode = (yearDate + (yearDate / 4)) % 7;
-    const monthCode = this.monthDaysName[this.monthIndex].code;
+    const monthCode = this.monthDaysName[month].code;
 
+    // Calculate if this year is a leap year
     let isLeap = 0;
     if (year % 4 === 0) isLeap = 1;
     if (year % 100 === 0) {
       isLeap = 0;
       if (year % 400 === 0) isLeap = 1;
     }
-
     this.isLeapYear = isLeap;
+
+    // Calculate and return the week day Index :
+    // 0: Sunday, 1: Monday, ....
     return Math.floor(yearCode + monthCode + centuryCode + day + isLeap) % 7;
   }
 
-  _calculateMonthDays = (next = true, monthIndex) => {
+  _calculateMonthDays = (monthIndex) => {
     let tempWeeksDays = [[], [], [], [], [], []];
-    const weekDayIndex = this._calculateWeekDay(this.currentYear, 1);
+    const weekDayIndex = this._calculateWeekDay(this.currentYear, this.currentMonth, 1);
     let monthsDaysCount = [31, 28 + this.isLeapYear, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 
@@ -70,8 +97,8 @@ class DatePicker extends Component {
           if (day > monthsDaysCount[monthIndex])
             pushItem = day - monthsDaysCount[monthIndex];
         } else
-          if (day > monthsDaysCount[this.monthIndex])
-            pushItem = day - monthsDaysCount[this.monthIndex];
+          if (day > monthsDaysCount[this.currentMonth])
+            pushItem = day - monthsDaysCount[this.currentMonth];
 
         tempWeeksDays[weekCounter].push(pushItem);
         lastDayPrinted = pushItem;
@@ -82,38 +109,54 @@ class DatePicker extends Component {
   }
 
   arrowCall(next) {
-    // if (next) this.monthIndex = Math.abs(this.monthIndex + 1) % 12;
-    // else this.monthIndex = Math.abs(this.monthIndex - 1) % 12;
+    // if (next) this.currentMonth = Math.abs(this.currentMonth + 1) % 12;
+    // else this.currentMonth = Math.abs(this.currentMonth - 1) % 12;
+
+    if (this.state.view === 1) {
+      if (next) this.currentYear++;
+      else this.currentYear--;
+      this.forceUpdate();
+      return;
+    }
 
     if (next)
-      this.monthIndex++;
+      this.currentMonth++;
     else
-      this.monthIndex--;
+      this.currentMonth--;
 
-    if (this.monthIndex === 12) {
-      this.monthIndex = 0;
+    if (this.currentMonth === 12) {
+      this.currentMonth = 0;
       this.currentYear++;
     }
-    else if (this.monthIndex === -1) {
-      this.monthIndex = 11;
+    else if (this.currentMonth === -1) {
+      this.currentMonth = 11;
       this.currentYear--;
     };
 
-    let monthIndex = this.monthIndex - 1;
+    let monthIndex = this.currentMonth - 1;
     if (monthIndex === 12) monthIndex = 0;
     else if (monthIndex === -1) monthIndex = 11;
 
-    let tempWeekDays = this._calculateMonthDays(next, monthIndex);
+    let tempWeekDays = this._calculateMonthDays(monthIndex);
     this.setState({
       weeksDays: tempWeekDays,
     });
   }
 
-  pickDate = (weekDay) => {
+  pickMonth = (monthIndex) => {
+    this.currentMonth = monthIndex;
+    let tempWeekDays = this._calculateMonthDays(monthIndex);
     this.setState({
-      date: [this.currentYear, this.monthIndex, weekDay]
+      weeksDays: tempWeekDays,
+      view: 0,
     });
-    console.log([this.currentYear, this.monthDaysName[this.monthIndex].name, weekDay]);
+  }
+
+  pickDay = (weekDay) => {
+    this.setState({
+      selectedDate: [this.currentYear, this.currentMonth, weekDay]
+    });
+    console.log([this.currentYear, this.monthDaysName[this.currentMonth].name, weekDay]);
   }
 
   render() {
@@ -121,36 +164,58 @@ class DatePicker extends Component {
       <div className="date-picker" >
         <div className="header">
           <div onClick={() => this.arrowCall(false)} className="arrow-prev"></div>
-          <h4 className="header-text" onClick={() => { console.log(); }}>{`${this.monthDaysName[this.monthIndex].name} ${this.currentYear}`}</h4>
+          <h4 className="header-text" onClick={() => {
+            this.setState({
+              view: this.state.view + 1,
+            })
+          }}>
+            {
+              this.state.view === 0 ?
+                `${this.monthDaysName[this.currentMonth].name} ${this.currentYear}` :
+                `${this.currentYear}`
+            }
+          </h4>
           <div onClick={() => this.arrowCall(true)} className="arrow-next"></div>
         </div>
-        <div className="weekDays">
-          <span>Sun</span>
-          <span>Mon</span>
-          <span>Tue</span>
-          <span>Wed</span>
-          <span>Thu</span>
-          <span>Fri</span>
-          <span>Sat</span>
-        </div>
-        <div className="month-days">
-          {
-            this.state.weeksDays.map((week, index) => {
-              return (
-                <div key={index} className="week-row">
-                  {
-                    this.state.weeksDays[index].map((weekDay) => {
-                      const date = this.state.date;
-                      const isSelected = this.currentYear === date[0] && this.monthIndex === date[1] && weekDay === date[2];
-                      const isNotInThisMonth = (index === 0 && weekDay > 7) || ((index === 5 || index === 4) && weekDay < 21);
-                      return <div key={'week' + index + '-' + weekDay} onClick={isNotInThisMonth ? null : () => this.pickDate(weekDay)} className={`day-item ${isSelected && !isNotInThisMonth ? 'selected' : ''} ${isNotInThisMonth ? 'fade' : ''}`} >{weekDay}</div>;
-                    })
-                  }
-                </div>
-              )
-            })
-          }
-        </div>
+        {
+          this.state.view === 1 ? <div className="month-list">
+            {
+              this.monthDaysName.map((month, index) => {
+                return (
+                  <div key={month.shortName} onClick={() => { this.pickMonth(index); }}>{month.shortName}</div>
+                )
+              })
+            }
+          </div> : <div>
+              <div className="week-days">
+                <span>Sun</span>
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+              </div>
+              <div className="month-days">
+                {
+                  this.state.weeksDays.map((week, index) => {
+                    return (
+                      <div key={index} className="week-row">
+                        {
+                          this.state.weeksDays[index].map((weekDay) => {
+                            const date = this.state.selectedDate;
+                            const isSelected = this.currentYear === date[0] && this.currentMonth === date[1] && weekDay === date[2];
+                            const isNotInThisMonth = (index === 0 && weekDay > 7) || ((index === 5 || index === 4) && weekDay < 21);
+                            return <div key={'week' + index + '-' + weekDay} onClick={isNotInThisMonth ? null : () => this.pickDay(weekDay)} className={`day-item ${isSelected && !isNotInThisMonth ? 'selected' : ''} ${isNotInThisMonth ? 'fade' : ''}`} >{weekDay}</div>;
+                          })
+                        }
+                      </div>
+                    )
+                  })
+                }
+              </div>
+            </div>
+        }
         <div className="show-date">
           <h5>Pick Time</h5>
         </div>
