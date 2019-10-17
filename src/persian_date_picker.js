@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
+// import 'persian-date';
 import './style.css';
 
-class DatePicker extends Component {
+class PersianDatePicker extends Component {
 
   constructor(props) {
     super(props);
@@ -26,34 +27,37 @@ class DatePicker extends Component {
     // list of month names with short name and codes*
     // *codes: used for f:_calculateWeekDay
     this.monthDaysName = [
-      { name: 'January', code: 0, shortName: 'Jan' },
-      { name: 'February', code: 3, shortName: 'Feb' },
-      { name: 'March', code: 3, shortName: 'Mar' },
-      { name: 'April', code: 6, shortName: 'Apr' },
-      { name: 'May', code: 1, shortName: 'May' },
-      { name: 'Jun', code: 4, shortName: 'Jun' },
-      { name: 'July', code: 6, shortName: 'Jul' },
-      { name: 'August', code: 2, shortName: 'Aug' },
-      { name: 'September', code: 5, shortName: 'Sep' },
-      { name: 'October', code: 0, shortName: 'Oct' },
-      { name: 'November', code: 3, shortName: 'Nov' },
-      { name: 'December', code: 5, shortName: 'Dec' }
+      { name: 'فروردین', code: 0, },
+      { name: 'اردیبهشت', code: 3, },
+      { name: 'خرداد', code: 3, },
+      { name: 'تیر', code: 6, },
+      { name: 'مرداد', code: 1, },
+      { name: 'شهریور', code: 4, },
+      { name: 'مهر', code: 6, },
+      { name: 'آبان', code: 2, },
+      { name: 'آذر', code: 5, },
+      { name: 'دی', code: 0, },
+      { name: 'بهمن', code: 3, },
+      { name: 'اسفند', code: 5, }
     ];
 
     // this.minYear = 1920;
     // this.maxYear = 2020;
 
     // current showing month
-    this.currentMonth = 0;
+    this.currentMonth = 6;
 
     // current showing year
-    this.currentYear = 2019;
+    this.currentYear = 1398;
 
     // is this.currentYear is leap
     this.isLeapYear = 0;
 
     this.minShowYear = 0;
     this.maxShowYear = 0;
+
+    this.isJalali = 1;
+
 
     this.date = this._jalaliToGregorian(1398, 7, 1);
     this.currentYear = this.date[0];
@@ -64,10 +68,37 @@ class DatePicker extends Component {
 
     // set weeksDays to show calculated days
     this.state.weeksDays = this._calculateMonthDays(this.currentYear, this.currentMonth, this.date[2]);
-
-    // console.log('date:', date);
-    // console.log(this._calculateWeekDay(date[0], date[1] - 1, date[2]));
+    console.log(this.state.weeksDays);
   }
+
+  // sunday: 0
+  // eg: 2019.1.1 was Tuesday so since sunday is 0:
+  // _calculateWeekDay(2019, 1, 1) -> 2 (sun:0, mon: 1, Tue: 2)
+  _calculateWeekDay(year, month, day) {
+
+    // Calculate Century, Year, Month and Day Code
+    const yearDate = year % 100;
+    const yearCentury = Math.floor(year / 100);
+    const centuryCodes = [4, 2, 0, 6];
+    const calcCenturyCode = yearCentury % 4;
+    const centuryCode = centuryCodes[calcCenturyCode === 0 ? 3 : calcCenturyCode - 1];
+    const yearCode = (yearDate + (yearDate / 4)) % 7;
+    const monthCode = this.monthDaysName[month].code;
+
+    // Calculate if this year is a leap year
+    let isLeap = 0;
+    if (year % 4 === 0) isLeap = 1;
+    if (year % 100 === 0) {
+      isLeap = 0;
+      if (year % 400 === 0) isLeap = 1;
+    }
+    this.isLeapYear = isLeap;
+
+    // Calculate and return the week day Index :
+    // 0: Sunday, 1: Monday, ....
+    return (Math.floor(yearCode + monthCode + centuryCode + day + isLeap) % 7) + this.isJalali;
+  }
+
 
   _toFloor = (number) => Math.floor(number);
 
@@ -130,38 +161,11 @@ class DatePicker extends Component {
 
   };
 
-  // sunday: 0
-  // eg: 2019.1.1 was Tuesday so since sunday is 0:
-  // _calculateWeekDay(2019, 1, 1) -> 2 (sun:0, mon: 1, Tue: 2)
-  _calculateWeekDay(year, month, day) {
-
-    // Calculate Century, Year, Month and Day Code
-    const yearDate = year % 100;
-    const yearCentury = Math.floor(year / 100);
-    const centuryCodes = [4, 2, 0, 6];
-    const calcCenturyCode = yearCentury % 4;
-    const centuryCode = centuryCodes[calcCenturyCode === 0 ? 3 : calcCenturyCode - 1];
-    const yearCode = (yearDate + (yearDate / 4)) % 7;
-    const monthCode = this.monthDaysName[month].code;
-
-    // Calculate if this year is a leap year
-    let isLeap = 0;
-    if (year % 4 === 0) isLeap = 1;
-    if (year % 100 === 0) {
-      isLeap = 0;
-      if (year % 400 === 0) isLeap = 1;
-    }
-    this.isLeapYear = isLeap;
-
-    // Calculate and return the week day Index :
-    // 0: Sunday, 1: Monday, ....
-    return Math.floor(yearCode + monthCode + centuryCode + day + isLeap) % 7;
-  }
 
   _calculateMonthDays = (year, monthIndex, day) => {
     let tempWeeksDays = [[], [], [], [], [], []];
     const weekDayIndex = this._calculateWeekDay(year, this.currentMonth, day);
-    let monthsDaysCount = [31, 28 + this.isLeapYear, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let monthsDaysCount = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 + this.isLeapYear];
 
 
     // let lastDayPrinted = this.state.weeksDays[4][6] === undefined ? 1 : this.state.weeksDays[4][6] + 1;
@@ -269,7 +273,7 @@ class DatePicker extends Component {
 
   pickMonth = (monthIndex) => {
     this.currentMonth = monthIndex;
-    let tempWeekDays = this._calculateMonthDays(this.currentYear, monthIndex, 1);
+    let tempWeekDays = this._calculateMonthDays(monthIndex);
     this._changeView();
     this.setState({
       weeksDays: tempWeekDays,
@@ -285,7 +289,7 @@ class DatePicker extends Component {
 
   render() {
     return (
-      <div className="date-picker" >
+      <div className="date-picker" dir="rtl" >
         <div className="header">
           <div onClick={() => this.arrowCall(false)} className="arrow-prev"></div>
           <h4 className="header-text" onClick={() => this._changeView(true)}>
@@ -301,13 +305,13 @@ class DatePicker extends Component {
         {
           this.state.view === 0 ? <div>
             <div className="week-days">
-              <span>Sun</span>
-              <span>Mon</span>
-              <span>Tue</span>
-              <span>Wed</span>
-              <span>Thu</span>
-              <span>Fri</span>
-              <span>Sat</span>
+              <span>ش</span>
+              <span>ی</span>
+              <span>د</span>
+              <span>س</span>
+              <span>چ</span>
+              <span>پ</span>
+              <span>ج</span>
             </div>
             <div className="month-days">
               {
@@ -331,7 +335,7 @@ class DatePicker extends Component {
             {
               this.monthDaysName.map((month, index) => {
                 return (
-                  <div key={month.shortName} className={this.currentMonth === index ? 'selected' : ''} onClick={() => { this.pickMonth(index); }}>{month.shortName}</div>
+                  <div key={month.name} className={this.currentMonth === index ? 'selected' : ''} onClick={() => { this.pickMonth(index); }}>{month.name}</div>
                 )
               })
             }
@@ -353,4 +357,4 @@ class DatePicker extends Component {
   };
 }
 
-export default DatePicker;
+export default PersianDatePicker;

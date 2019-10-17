@@ -103,8 +103,8 @@
 
 .year-list .selected,
 .month-list .selected {
-  background: #7C4DFF;
-  color: #FFFFFF;
+  color: #7C4DFF;
+  font-weight: bold;
 }
 
 /* .day-item .background-bubble {
