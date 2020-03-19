@@ -1,356 +1,345 @@
-import React, { Component } from 'react';
-import './style.css';
+import React, { Component } from "react";
 
 class DatePicker extends Component {
 
   constructor(props) {
     super(props);
+    this.onArrowClick = this.onArrowClick.bind(this);
+    this.selectDate = this.selectDate.bind(this);
+    this.setDecade = this.setDecade.bind(this);
+    this.nextView = this.nextView.bind(this);
+    this.previousView = this.previousView.bind(this);
+    this.changeDisplayingDate = this.changeDisplayingDate.bind(this);
+    this.gotoDate = this.gotoDate.bind(this);
+
     this.state = {
-      // week days to show for current state
-      weeksDays: [[], [], [], [], [], []],
-
-      // picking years array
-      yearsToShow: [],
-
-      // user selected date
-      selectedDate: [0, 0, 0],
-
-      // views:
-      // 0: days,
-      // 1: months,
-      // 2: years,
-      // 3: year ranges,
       view: 0,
+      displayingDate: props.initDate,
+      decade: props.initDate[0],
+      selectedDate: props.selectedDate ?? [],
     };
 
-    // list of month names with short name and codes*
-    // *codes: used for f:_calculateWeekDay
-    this.monthDaysName = [
-      { name: 'January', code: 0, shortName: 'Jan' },
-      { name: 'February', code: 3, shortName: 'Feb' },
-      { name: 'March', code: 3, shortName: 'Mar' },
-      { name: 'April', code: 6, shortName: 'Apr' },
-      { name: 'May', code: 1, shortName: 'May' },
-      { name: 'Jun', code: 4, shortName: 'Jun' },
-      { name: 'July', code: 6, shortName: 'Jul' },
-      { name: 'August', code: 2, shortName: 'Aug' },
-      { name: 'September', code: 5, shortName: 'Sep' },
-      { name: 'October', code: 0, shortName: 'Oct' },
-      { name: 'November', code: 3, shortName: 'Nov' },
-      { name: 'December', code: 5, shortName: 'Dec' }
-    ];
+    this.data = props.data;
+    this.minYear = props.minYear ?? 1100;
 
-    // this.minYear = 1920;
-    // this.maxYear = 2020;
-
-    // current showing month
-    this.currentMonth = 0;
-
-    // current showing year
-    this.currentYear = 2019;
-
-    // is this.currentYear is leap
-    this.isLeapYear = 0;
-
-    this.minShowYear = 0;
-    this.maxShowYear = 0;
-
-    this.date = this._jalaliToGregorian(1398, 7, 1);
-    this.currentYear = this.date[0];
-    this.currentMonth = this.date[1] - 1;
-
-    const weekDayIndex = this._calculateWeekDay(this.currentYear, this.currentMonth, this.date[2]);
-    console.log(weekDayIndex);
-
-    // set weeksDays to show calculated days
-    this.state.weeksDays = this._calculateMonthDays(this.currentYear, this.currentMonth, this.date[2]);
-
-    // console.log('date:', date);
-    // console.log(this._calculateWeekDay(date[0], date[1] - 1, date[2]));
   }
 
-  _toFloor = (number) => Math.floor(number);
+  changeDisplayingDate = (displayingDate) =>
+    this.setState({ displayingDate, decade: displayingDate[0] });
 
-  _jalaliToGregorian = (year, month, day) => {
-    console.log('Shamsi: ', [year, month, day]);
-    let gregorianYear;
-    if (year > 979) {
-      gregorianYear = 1600;
-      year -= 979;
-    } else {
-      gregorianYear = 621;
+  onArrowClick = (next = false) => {
+    let decade, changeFactor;
+    switch (this.state.view) {
+      case 0:
+        const newDisplayingDate = this._calculateDisplayingDate(this.state.displayingDate[0], this.state.displayingDate[1], this.state.displayingDate[2], next);
+        if (newDisplayingDate[0] < this.minYear && newDisplayingDate[1] === 11) return;
+        this.changeDisplayingDate(newDisplayingDate);
+        break;
+      case 2:
+        changeFactor = next ? 10 : -10;
+        decade = this.state.decade + changeFactor;
+        if (decade < (this.minYear - this.minYear % 10)) return;
+        this.setState({ decade });
+        break;
+      case 3:
+        changeFactor = next ? 30 : -30;
+        if (!next && (this.state.decade - this.state.decade % 10) <= (this.minYear - this.minYear % 10)) return;
+        decade = this.state.decade + changeFactor;
+        this.setState({ decade });
+        break;
+      default:
+        console.log('Error: Invalid view!');
     }
-
-    let days = (365 * year) +
-      (this._toFloor(year / 33) * 8) +
-      (((year % 33) + 3) / 4) +
-      78 +
-      day +
-      (((month < 7) ? (month - 1) * 31 : (((month - 7) * 30) + 186)));
-
-    gregorianYear += 400 * (this._toFloor(days / 146097));
-
-    days %= 146097;
-    if (this._toFloor(days) > 36524) {
-      gregorianYear += 100 * (this._toFloor(--days / 36524));
-      days %= 36524;
-      if (days >= 365) days++;
-    }
-    gregorianYear += 4 * (this._toFloor(days / 1461));
-    days %= 1461;
-    gregorianYear += this._toFloor((days - 1) / 365);
-
-    if (days > 365) days = (days - 1) % 365;
-    let gregorianDay = this._toFloor(days + 1);
-    let montDays = [
-      0,
-      31,
-      (((gregorianYear % 4 === 0) && (gregorianYear % 100 !== 0)) || (gregorianYear % 400 === 0)) ? 29 : 28,
-      31,
-      30,
-      31,
-      30,
-      31,
-      31,
-      30,
-      31,
-      30,
-      31
-    ];
-
-    let index = 0;
-    for (; index <= 12; index++) {
-      if (gregorianDay <= montDays[index]) break;
-      gregorianDay -= montDays[index];
-    }
-
-    console.log('miladi: ', [gregorianYear, index, gregorianDay]);
-
-    return [gregorianYear, index, gregorianDay];
-
   };
 
-  // sunday: 0
-  // eg: 2019.1.1 was Tuesday so since sunday is 0:
-  // _calculateWeekDay(2019, 1, 1) -> 2 (sun:0, mon: 1, Tue: 2)
-  _calculateWeekDay(year, month, day) {
+  selectDate = (day) => {
+    const selectedDate = [this.state.displayingDate[0], this.state.displayingDate[1], day];
+    this.setState({ selectedDate });
+    this.props.onSelectDate(selectedDate);
+  };
 
-    // Calculate Century, Year, Month and Day Code
-    const yearDate = year % 100;
-    const yearCentury = Math.floor(year / 100);
-    const centuryCodes = [4, 2, 0, 6];
-    const calcCenturyCode = yearCentury % 4;
-    const centuryCode = centuryCodes[calcCenturyCode === 0 ? 3 : calcCenturyCode - 1];
-    const yearCode = (yearDate + (yearDate / 4)) % 7;
-    const monthCode = this.monthDaysName[month].code;
+  _calculateDisplayingDate = (currentYear, currentMonth, day, next) => {
+    const changeFactor = next ? 1 : -1;
+    const newMonth = (currentMonth + changeFactor) % 12;
+    const month = newMonth < 0 ? 11 : newMonth;
+    const year = (newMonth < 0 || (!newMonth && next)) ? currentYear + changeFactor : currentYear;
+    return [year, month, day];
+  };
 
-    // Calculate if this year is a leap year
-    let isLeap = 0;
-    if (year % 4 === 0) isLeap = 1;
-    if (year % 100 === 0) {
-      isLeap = 0;
-      if (year % 400 === 0) isLeap = 1;
-    }
-    this.isLeapYear = isLeap;
+  previousView = () => this.state.view > 0 ?
+    this.setState({ view: this.state.view - 1 }) : null;
 
-    // Calculate and return the week day Index :
-    // 0: Sunday, 1: Monday, ....
-    return Math.floor(yearCode + monthCode + centuryCode + day + isLeap) % 7;
-  }
+  nextView = () =>
+    this.state.view < 3 ?
+      this.setState({ view: this.state.view + 1 }) : null;
 
-  _calculateMonthDays = (year, monthIndex, day) => {
-    let tempWeeksDays = [[], [], [], [], [], []];
-    const weekDayIndex = this._calculateWeekDay(year, this.currentMonth, day);
-    let monthsDaysCount = [31, 28 + this.isLeapYear, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  _calculateDecade = () => this.state.decade - this.state.decade % 10;
 
+  setDecade = (decade) => this.setState({ decade });
 
-    // let lastDayPrinted = this.state.weeksDays[4][6] === undefined ? 1 : this.state.weeksDays[4][6] + 1;
-    let lastDayPrinted = monthsDaysCount[monthIndex] - weekDayIndex + 1;
-
-    for (let weekCounter = 0; weekCounter < 6; weekCounter++) {
-      const firstDay = lastDayPrinted;
-      const lastDay = firstDay + 7;
-
-      for (let day = firstDay; day < lastDay; day++) {
-        let pushItem = day;
-        if (weekCounter === 0) {
-          if (day > monthsDaysCount[monthIndex])
-            pushItem = day - monthsDaysCount[monthIndex];
-        } else
-          if (day > monthsDaysCount[this.currentMonth])
-            pushItem = day - monthsDaysCount[this.currentMonth];
-
-        tempWeeksDays[weekCounter].push(pushItem);
-        lastDayPrinted = pushItem;
-      }
-      lastDayPrinted++;
-    }
-    return tempWeeksDays;
-  }
-
-  arrowCall(next) {
-    // if (next) this.currentMonth = Math.abs(this.currentMonth + 1) % 12;
-    // else this.currentMonth = Math.abs(this.currentMonth - 1) % 12;
-
-    if (this.state.view === 1) {
-      if (next) this.currentYear++;
-      else this.currentYear--;
-      this.forceUpdate();
-      return;
-    } else if (this.state.view === 2) {
-      this._calculateYears(next);
-      return;
-    }
-    else if (this.state.view === 3) {
-      console.log(3);
-      return;
-    }
-
-    if (next)
-      this.currentMonth++;
-    else
-      this.currentMonth--;
-
-    if (this.currentMonth === 12) {
-      this.currentMonth = 0;
-      this.currentYear++;
-    }
-    else if (this.currentMonth === -1) {
-      this.currentMonth = 11;
-      this.currentYear--;
-    };
-
-    let monthIndex = this.currentMonth - 1;
-    if (monthIndex === 12) monthIndex = 0;
-    else if (monthIndex === -1) monthIndex = 11;
-
-    let tempWeekDays = this._calculateMonthDays(this.currentYear, monthIndex, 1);
+  gotoDate = (displayingDate) => {
     this.setState({
-      weeksDays: tempWeekDays,
+      displayingDate,
+      view: 0,
     });
-  }
-
-  _calculateYears = (nextYearList) => {
-
-    let tempYears = [];
-    let startYear, endYear;
-    if (nextYearList === undefined) {
-      startYear = this.currentYear - this.currentYear % 10;
-      endYear = startYear + 10;
-    } else if (nextYearList) {
-      startYear = this.state.yearsToShow[9] + 1;
-      endYear = startYear + 10;
-    } else {
-      startYear = this.state.yearsToShow[0] - 10;
-      endYear = this.state.yearsToShow[0];
-    }
-    this.minShowYear = startYear;
-    this.maxShowYear = endYear - 1;
-    for (let index = startYear; index < endYear; index++) {
-      tempYears.push(index);
-    }
-    this.setState({ yearsToShow: tempYears });
-  }
-
-  _changeView = (nextView = false) => {
-    if (this.state.view === 3) return;
-    this.setState({
-      view: nextView ? this.state.view + 1 : this.state.view - 1,
-    })
-    if (this.state.view + 1 === 2) {
-      this._calculateYears();
-    }
-  }
-
-  pickYear = (year) => {
-    this.currentYear = year;
-    this._changeView();
-  }
-
-  pickMonth = (monthIndex) => {
-    this.currentMonth = monthIndex;
-    let tempWeekDays = this._calculateMonthDays(this.currentYear, monthIndex, 1);
-    this._changeView();
-    this.setState({
-      weeksDays: tempWeekDays,
-    });
-  }
-
-  pickDay = (weekDay) => {
-    this.setState({
-      selectedDate: [this.currentYear, this.currentMonth, weekDay]
-    });
-    console.log([this.currentYear, this.monthDaysName[this.currentMonth].name, weekDay]);
-  }
+  };
 
   render() {
     return (
-      <div className="date-picker" >
-        <div className="header">
-          <div onClick={() => this.arrowCall(false)} className="arrow-prev"></div>
-          <h4 className="header-text" onClick={() => this._changeView(true)}>
-            {
-              this.state.view === 0 ?
-                `${this.monthDaysName[this.currentMonth].name} ${this.currentYear}` :
-                this.state.view === 1 ?
-                  this.currentYear : this.state.view === 2 ? `${this.minShowYear} - ${this.maxShowYear}` : ''
-            }
-          </h4>
-          <div onClick={() => this.arrowCall(true)} className="arrow-next"></div>
+      <div className="date-picker">
+        <Header
+          title={
+            this.state.view === 0 ?
+              `${this.data.months[this.state.displayingDate[1]].name} ${this.state.displayingDate[0]}` :
+              this.state.view === 1 ? this.state.displayingDate[0] : this.state.view === 2 ? `${this._calculateDecade()} - ${this._calculateDecade() + 9}` :
+                <svg className="calendar-icon" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none" /><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V10h16v11zm0-13H4V5h16v3z" /></svg>
+          }
+          hideArrows={this.state.view === 1}
+          onArrowClick={this.onArrowClick}
+          nextView={this.nextView}
+        />
+        <div className="views-container">
+          <div className="views">
+            <Calendar
+              className={`view${this.state.view === 0 ? '' : ' hide-view'}`}
+              selectedDate={this.state.selectedDate}
+              selectDate={this.selectDate}
+              initDate={this.props.highlightToday ? this.props.initDate : []}
+              displayingDate={this.state.displayingDate}
+              shortWeekLabel={this.props.shortWeekLabel}
+              onlyShowCurrentMonthDays={this.props.onlyShowCurrentMonthDays}
+              hideLastFadedRow={this.props.hideLastFadedRow}
+              isSolar={this.data.isSolar}
+              toGregorian={this.data.toGregorian}
+              monthsDaysCount={this.data.monthsDaysCount}
+              leapIndex={this.data.leapIndex}
+              isLeapYear={this.data.isLeapYear}
+              weekDays={this.data.weekDays}
+            />
+            <MonthsView
+              className={`view months-view${this.state.view === 1 ? '' : ' hide-view'}`}
+              displayingDate={this.state.displayingDate}
+              changeDisplayingDate={this.changeDisplayingDate}
+              previousView={this.previousView}
+              months={this.data.months}
+            />
+            <YearsView
+              className={`view years-view${this.state.view === 2 ? '' : ' hide-view'}`}
+              displayingDate={this.state.displayingDate}
+              changeDisplayingDate={this.changeDisplayingDate}
+              previousView={this.previousView}
+              decade={this.state.decade}
+              minYear={this.minYear}
+            />
+            <DecadesView
+              className={`view decades-view${this.state.view === 3 ? '' : ' hide-view'}`}
+              setDecade={this.setDecade}
+              previousView={this.previousView}
+              displayingDate={this.state.displayingDate}
+              decade={this.state.decade}
+              minYear={this.minYear}
+            />
+          </div>
         </div>
         {
-          this.state.view === 0 ? <div>
-            <div className="week-days">
-              <span>Sun</span>
-              <span>Mon</span>
-              <span>Tue</span>
-              <span>Wed</span>
-              <span>Thu</span>
-              <span>Fri</span>
-              <span>Sat</span>
-            </div>
-            <div className="month-days">
-              {
-                this.state.weeksDays.map((week, index) => {
-                  return (
-                    <div key={index} className="week-row">
-                      {
-                        this.state.weeksDays[index].map((weekDay) => {
-                          const date = this.state.selectedDate;
-                          const isSelected = this.currentYear === date[0] && this.currentMonth === date[1] && weekDay === date[2];
-                          const isNotInThisMonth = (index === 0 && weekDay > 7) || ((index === 5 || index === 4) && weekDay < 21);
-                          return <div key={'week' + index + '-' + weekDay} onClick={isNotInThisMonth ? null : () => this.pickDay(weekDay)} className={`day-item ${isSelected && !isNotInThisMonth ? 'selected' : ''} ${isNotInThisMonth ? 'fade' : ''}`} >{weekDay}</div>;
-                        })
-                      }
-                    </div>
-                  )
-                })
-              }
-            </div>
-          </div> : this.state.view === 1 ? <div className="month-list">
-            {
-              this.monthDaysName.map((month, index) => {
-                return (
-                  <div key={month.shortName} className={this.currentMonth === index ? 'selected' : ''} onClick={() => { this.pickMonth(index); }}>{month.shortName}</div>
-                )
-              })
-            }
-          </div> : this.state.view === 2 ? <div className="year-list">
-            {
-              this.state.yearsToShow.map((year) => {
-                return (
-                  <div key={year} className={this.currentYear === year ? 'selected' : ''} onClick={() => { this.pickYear(year); }}>{year}</div>
-                )
-              })
-            } </div>
-                : this.state.view === 3 ? <p>Show Decades</p> : null
+          this.props.showSelectedDate && this.state.selectedDate.length ? <BottomExtraData months={this.data.months} className="selected-date" gotoDate={this.gotoDate} date={this.state.selectedDate} /> : null
         }
-        <div className="show-date">
-          <h5>Pick Time</h5>
-        </div>
+        {
+          this.props.showToday ? <BottomExtraData months={this.data.months} className="today" gotoDate={this.gotoDate} date={this.props.initDate} /> : null
+        }
       </div>
     );
-  };
+  }
+
+}
+
+const BottomExtraData = (props) => {
+  return <div className={props.className} onClick={() => props.gotoDate(props.date)}>
+    {`${props.months[props.date[1]]['name']} ${props.date[2]}, ${props.date[0]}`}
+  </div>;
+};
+
+const DecadesView = (props) => {
+  let decades = [];
+  let startYear = props.decade - props.decade % 10;
+  for (let i = 0; i < 3; ++i) {
+    decades.push([startYear, startYear + 9]);
+    startYear += 10;
+  }
+  return < div className={props.className} >
+    {
+      decades.map(
+        (decade) => {
+          const enabled = decade[1] >= props.minYear;
+          const activeDecade = props.displayingDate[0] - props.displayingDate[0] % 10 === decade[0];
+          return <div
+            key={decade}
+            className={`decade-button${enabled ? ' enabled-decade' : ''}${activeDecade ? ' active-decade' : ''}`}
+            onClick={enabled ? () => {
+              props.setDecade(decade[0]);
+              props.previousView();
+            } : null}
+          >
+            <div>{`${decade[0]} - ${decade[1]}`}</div>
+          </div>
+        }
+      )
+    }
+  </div>;
+};
+
+const YearsView = (props) => {
+  const startYear = props.decade - props.decade % 10;
+
+  const years = Array.from({ length: 10 }, (v, k) => startYear + k);
+
+  return < div className={props.className} >
+    {
+      years.map(
+        (year) => {
+          const enabled = year >= props.minYear;
+          return <div
+            key={year}
+            className={`year-button${enabled ? ' enabled-year' : ''}${year === props.displayingDate[0] ? ' active-year' : ''}`}
+            onClick={enabled ? () => {
+              props.changeDisplayingDate([year, props.displayingDate[1], props.displayingDate[2]]);
+              props.previousView();
+            } : null}
+          >
+            <div>{year}</div>
+          </div>
+        }
+      )
+    }
+  </div>;
+};
+
+const Header = (props) => {
+  return <div className="header">
+    {
+      props.hideArrows ? null : <div className="previous" onClick={() => props.onArrowClick()}>
+        <svg height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none" /><path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /></svg>
+      </div>
+    }
+    <p onClick={props.nextView}>{props.title}</p>
+    {
+      props.hideArrows ? null : <div className="next" onClick={() => props.onArrowClick(true)}>
+        <svg height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none" /><path d="M5 13h11.17l-4.88 4.88c-.39.39-.39 1.03 0 1.42.39.39 1.02.39 1.41 0l6.59-6.59c.39-.39.39-1.02 0-1.41l-6.58-6.6c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L16.17 11H5c-.55 0-1 .45-1 1s.45 1 1 1z" /></svg>
+      </div>
+    }
+  </div>;
+}
+
+const MonthsView = (props) => {
+  return <div className={props.className}>
+    {
+      props.months.map((month, i) =>
+        <div
+          key={month['name']}
+          className={`month-button ${props.displayingDate[1] === i ? 'active-month' : ''}`}
+          onClick={() => {
+            props.changeDisplayingDate([props.displayingDate[0], i, props.displayingDate[2]]);
+            props.previousView();
+          }}
+        >
+          <div>{month['shortName']}</div>
+        </div>
+      )
+    }
+  </div>;
+};
+
+const Calendar = (props) => {
+
+  const _calculateIfTodayExist = () =>
+    props.initDate[0] === props.displayingDate[0] &&
+    props.initDate[1] === props.displayingDate[1];
+
+  const _calculateIfSelectedDayExist = () =>
+    props.selectedDate[0] === props.displayingDate[0] &&
+    props.selectedDate[1] === props.displayingDate[1];
+
+  const today = _calculateIfTodayExist() ? props.initDate[2] : -1;
+
+  const selectedDay = _calculateIfSelectedDayExist() ? props.selectedDate[2] : -1;
+
+  const _calculateCalendar = () => {
+    let date = new Date(props.displayingDate[0], props.displayingDate[1], 1);
+    if (props.isSolar) {
+      const newDate = props.toGregorian(props.displayingDate[0], props.displayingDate[1] + 1, 1);
+      date = new Date(newDate[0], newDate[1] - 1, newDate[2]);
+    }
+
+    const currentMonthDaysCount = props.monthsDaysCount[props.displayingDate[1]] + (props.displayingDate[1] === props.leapIndex ? props.isLeapYear(props.displayingDate[0]) : 0);
+
+    let tempYear = props.displayingDate[0];
+    let previousMonthDaysIndex = props.displayingDate[1] - 1;
+    if (props.displayingDate[1] - 1 === -1) {
+      tempYear--;
+      previousMonthDaysIndex = 11;
+    }
+    const previousMonthDaysCount = props.monthsDaysCount[previousMonthDaysIndex] + (props.displayingDate[1] - 1 === props.leapIndex ? props.isLeapYear(tempYear) : 0);
+
+    const startWeekAtIndex = date.getDay();
+    // console.log(startWeekAtIndex);
+
+    let totalCells = currentMonthDaysCount + startWeekAtIndex;
+
+    let calendar = [];
+    let week = Array.from({ length: startWeekAtIndex }, (v, k) => (previousMonthDaysCount - startWeekAtIndex) + k + 1);
+
+    for (let i = startWeekAtIndex + 1; calendar.length < 6; ++i) {
+      const day = i > totalCells ? i - totalCells : i - startWeekAtIndex;
+      if (i % 7 === 0) {
+        week.push(day);
+        calendar.push(week);
+        week = [];
+        if ((props.onlyShowCurrentMonthDays || props.hideLastFadedRow) && 7 * calendar.length >= totalCells) break;
+        continue;
+      }
+      week.push(day);
+
+    }
+    return calendar;
+  }
+
+  return <div className={props.className}>
+    <WeekLabels weekDays={props.weekDays} shortWeekLabel={props.shortWeekLabel} />
+    {
+      _calculateCalendar().map((calendar, index) => {
+        return (
+          <div key={index} className="calendar-row">
+            {
+              calendar.map((day, i) => {
+                const notForThisMonth = ((index === 0 && day > 7) || (index > 2 && day < 15));
+                return <div
+                  key={`day-${i}`}
+                  className={`calendar-day${(notForThisMonth ? ' fade' : selectedDay === day ? ' selected-day' : today === day ? ' current-date-highlight' : '')}`}
+                  onClick={notForThisMonth ? null : () => props.selectDate(day)}
+                >
+                  <div className="calendar-day-data">
+                    {props.onlyShowCurrentMonthDays && notForThisMonth ? null : day}
+                  </div>
+                </div>
+              })
+            }
+          </div>
+        )
+      })
+    }
+  </div>;
+}
+
+const WeekLabels = (props) => {
+  return <div className="week-labels-row">
+    {
+      props.weekDays.map((weekDay, i) =>
+        <div key={i} className="calendar-day">
+          <div className="calendar-day-data">{weekDay[props.shortWeekLabel ? 'shortName' : 'name']}</div>
+        </div>
+      )
+    }
+  </div>
 }
 
 export default DatePicker;
