@@ -15,10 +15,23 @@ ReactDOM.render(
 
       data={data}
       initDate={[2020, 2, 20]}
-      minYear={1600}
-      onSelectDate={(date) => console.log(date)}
+      minYear={1995}
+      onChangeDate={(date) => console.log(date)}
+      onChangeTime={(time) => console.log(time)}
       highlightToday={true}
       shortWeekLabel={true}
+      // timeOnly={true}
+      // if range select is true
+      // selectedDate must be a 2D array
+      // e.g  --> selectedDate={[2020, 2, 19], [2020, 2, 25]}
+      rangeSelect={true}
+      // selectedDate={[[2020, 2, 16], [2020, 2, 26]]}
+      // selectedTime={[20, 59, 24]}
+      // initView={3}
+      enableTime={true}
+
+    // maxRange
+
     // selectedDate={[2020, 2, 19]}
     // onlyShowCurrentMonthDays={true}
     // hideLastFadedRow={true}

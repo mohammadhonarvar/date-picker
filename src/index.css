@@ -19,7 +19,7 @@ p {
   margin: 0 auto;
   background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   user-select: none;
   overflow: hidden;
 }
@@ -45,13 +45,14 @@ p {
 }
 
 .date-picker .header .calendar-icon {
-  fill: rgba(0, 0, 0, 0.60);
+  fill: rgba(0, 0, 0, 0.38);
 }
 
 .date-picker .week-labels-row,
 .date-picker .calendar-row {
   display: flex;
   padding: 0 8px;
+  margin: 6px 0;
 }
 
 .date-picker .week-labels-row {
@@ -105,6 +106,26 @@ p {
 .date-picker .calendar-row .selected-day {
   background: #A0144F;
   color: rgba(255, 255, 255, 0.87);
+}
+
+.date-picker .calendar-row .in-range-day {
+  background: #A0144F23;
+  border-radius: 0;
+}
+
+.date-picker .calendar-row .in-range-day,
+.date-picker .calendar-day-data[data-range-edge="true"],
+.date-picker .calendar-day-data[data-start-range-edge] {
+  transition: ease-in 0.15s;
+}
+
+.date-picker .calendar-day-data[data-range-edge="true"] {
+  border-radius: 0 50% 50% 0;
+  background: #A0144F23;
+}
+
+.date-picker .calendar-day-data[data-start-range-edge] {
+  border-radius: 50% 0 0 50%;
 }
 
 .date-picker .actions {
@@ -235,4 +256,96 @@ p {
 .date-picker .today {
   background-color: #A0144F23;
   color: #A0144F;
+}
+
+.clock-view {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+  margin-top: 24px;
+  /* background: #eaeaea;
+  border-radius: 10px; */
+}
+
+.clock-view .clock {
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  background: #efefef;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  border: 3px solid #ffffff;
+  margin: 24px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.clock-view .pointer {
+  position: absolute;
+  transform-origin: 0;
+  border-radius: 4px;
+  background: #9a9a9e;
+  transition: cubic-bezier(0.455, 0.03, 0.515, 0.955) 0.65s;
+}
+
+.clock-view .hour {
+  width: 42px;
+  height: 4px;
+  transform: translate(50%) rotate(0deg);
+}
+
+.clock-view .minute {
+  width: 48px;
+  height: 3px;
+  transform: translate(50%) rotate(130deg);
+}
+
+.clock-view .second {
+  background: #fa7777;
+  width: 56px;
+  height: 2px;
+  transform: translate(50%) rotate(90deg);
+}
+
+.clock-view .center-dot {
+  background: #ffffff;
+  border: 4px solid #9a9a9e;
+  border-radius: 50%;
+  width: 3px;
+  height: 3px;
+  z-index: 2;
+}
+
+.clock-view .clock-input-container {
+  color: rgba(0, 0, 0, 0.38);
+  margin: 24px auto;
+  display: flex;
+}
+
+.clock-view .clock-input-container input {
+  outline: none;
+  width: 42px;
+  height: 42px;
+  background-color: #efefef;
+  border: none;
+  margin: 0 8px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.38);
+}
+
+.goto-time-view {
+  height: 42px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  margin-top: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  fill: rgba(0, 0, 0, 0.60);
 }
