@@ -6,27 +6,28 @@ export const appConfig = {
   maxWith: 768, //px
   mainImageHeight: 430, //px
   mainImageMargin: 60, //px
-  iconSize: 28, //px
+  iconSize: 24, //px
   iconButtonSize: 56, //px
 };
 
 // This is the base theme & shared styles(for example)
 export const styleConfig = css`
   :host {
-    --app-primary-color: #3277b9;
-    /* --app-accent-color: #cf7a59; */
-    --app-accent-color: #f57c00;
-    --app-primary-text-color: #ffffff;
-    --app-light-back-color: #eeeeee;
-    --app-dark-background-color: #102f4b;
+    --primary-color: #512DA8;
+    --dark-primary-color: #B39DDB;
+    --accent-color: #9FA8DA;
+    --dark-accent-color: #E91E63;
 
-    --mdc-typography-font-family: "Iran Sans", "Roboto", "Tahoma", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    --primary-text-color: rgba(0, 0, 0, 0.87);
+    --dark-primary-text-color: rgba(255, 255, 255, 0.87);
 
-    --mdc-theme-primary: var(--app-primary-color);
-    --mdc-theme-secondary: var(--app-accent-color);
-    --mdc-theme-on-primary: var(--app-primary-text-color);
-    --mdc-theme-text-primary-on-dark: var(--app-primary-text-color);
-    --mdc-icon-size: ${appConfig.iconSize}px;
-    --mdc-icon-button-size: ${appConfig.iconButtonSize}px;
+
+    --background-color: #ffffff;
+    --dark-background-color: #121212;
+
+    --font-family: "Iran Sans", "Open Sans", "Tahoma", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+    --icon-size: ${appConfig.iconSize}px;
+    --icon-button-size: ${appConfig.iconButtonSize}px;
   }
 `;
