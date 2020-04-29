@@ -19,35 +19,6 @@ export const baseStyle = css`
     width: 320px;
   }
 
-  .date-picker {
-    margin: 0 auto;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    user-select: none;
-    overflow: hidden;
-  }
-
-  .date-picker .header {
-    display: flex;
-    flex-flow: row nowrap;
-    padding: 16px;
-    align-items: center;
-    /* background-color: #A0144F23; */
-  }
-
-  .date-picker .header p {
-    font-weight: 500;
-    cursor: pointer;
-    color: rgba(0, 0, 0, 0.87);
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    margin: 0 8px;
-  }
-
   .date-picker .header .calendar-icon {
     fill: rgba(0, 0, 0, 0.38);
   }
@@ -66,50 +37,6 @@ export const baseStyle = css`
     font-size: 0.85em;
     cursor: default;
     color: rgba(0, 0, 0, 0.38);
-  }
-
-  .date-picker .week-labels-row .calendar-day,
-  .date-picker .calendar-row .calendar-day {
-    /* background-color: tomato; */
-    /* margin: 2px; */
-    font-weight: 500;
-    flex: 1 0 auto;
-    position: relative;
-  }
-
-  .date-picker .week-labels-row .calendar-day::after,
-  .date-picker .calendar-row .calendar-day::after {
-    content: "";
-    float:left;
-    display: block;
-    padding-top: 100%;
-  }
-
-  .date-picker .calendar-row .calendar-day {
-    color: rgba(0, 0, 0, 0.87);
-    cursor: pointer;
-    border-radius: 50%;
-  }
-
-  .date-picker .calendar-day-data {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .date-picker .calendar-row .current-date-highlight {
-    color: #A0144F;
-    background-color: #A0144F23;
-  }
-
-  .date-picker .calendar-row .selected-day {
-    background: #A0144F;
-    color: rgba(255, 255, 255, 0.87);
   }
 
   .date-picker .calendar-row .in-range-day {
