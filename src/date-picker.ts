@@ -1,13 +1,14 @@
 import { html, css, customElement, TemplateResult } from 'lit-element';
 
 import { BaseElement } from './base-element';
-import { baseStyle } from './base-style';
+import './components/header';
+import './components/calendar';
 
 @customElement('date-picker')
 export class DatePicker extends BaseElement {
 
-  static styles = [baseStyle, css`
-    :host {
+  static styles = css`
+    .date-picker {
       margin: 0 auto;
       background-color: #ffffff;
       border-radius: 8px;
@@ -15,10 +16,19 @@ export class DatePicker extends BaseElement {
       user-select: none;
       overflow: hidden;
     }
-  `];
+  `;
 
   protected render(): TemplateResult {
-    this._log('render');
-    return html`<p>Date picker</p>`;
+    return html`
+      <!-- disableNavigation default -> false -->
+      <div class="date-picker">
+        <header-element
+          ?disableNavigation=${false}
+          title="March 2020"
+        >
+        </header-element>
+        <calendar-element></calendar-element>
+      </div>
+    `;
   }
 }

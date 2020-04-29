@@ -1,12 +1,11 @@
 import { html, css, customElement, TemplateResult } from 'lit-element';
 
-import { BaseElement } from './base-element';
-import { baseStyle } from './base-style';
+import { BaseElement } from '../base-element';
 
-@customElement('calendar-ma')
-export class CalendarMa extends BaseElement {
+@customElement('calendar-element')
+export default class CalendarElement extends BaseElement {
 
-  static styles = [baseStyle, css`
+  static styles = css`
     :host {}
 
     .week-labels-row .calendar-day,
@@ -52,10 +51,9 @@ export class CalendarMa extends BaseElement {
       background: #A0144F;
       color: rgba(255, 255, 255, 0.87);
     }
-  `];
+  `;
 
   protected render(): TemplateResult {
-    this._log('render');
-    return html`<p>Calendar Ma</p>`;
+    return html`<p style="text-align: center;">Calendar Ma</p>`;
   }
 }
