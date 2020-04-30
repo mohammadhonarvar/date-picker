@@ -10,7 +10,7 @@ export class HeaderElement extends BaseElement {
   title: string = '';
 
   @property({ type: Boolean })
-  disableNavigation: Boolean = false;
+  disableNavigation: boolean = false;
 
   // FIX THEME & CSS VARs
   static styles = css`

@@ -5,8 +5,16 @@ import { BaseElement } from '../base-element';
 @customElement('calendar-element')
 export default class CalendarElement extends BaseElement {
 
+  _sortRangeSelectedDates = (selectedDates: Array<Number> | undefined) => {
+    if (!selectedDates) return [];
+
+    const startDate = Date.parse(selectedDates[0].toString());
+    const endDate = Date.parse(selectedDates[1].toString());
+
+    return startDate > endDate ? [selectedDates[1], selectedDates[0]] : selectedDates;
+  };
+
   static styles = css`
-    :host {}
 
     .week-labels-row .calendar-day,
     .calendar-row .calendar-day {
