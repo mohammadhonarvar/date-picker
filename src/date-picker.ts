@@ -8,15 +8,15 @@ import './components/calendar';
 export class DatePicker extends BaseElement {
 
   @property({ type: Object }) data = {};
-  @property({ type: Boolean }) justTimePicker = false;
-  @property({ type: Number }) view = this.justTimePicker ? 4 : 0;
-  @property({ type: Array }) selectedTime = [];
-  @property({ type: Number }) minimumYear = 1100;
+  @property({ type: Boolean }) justTimePicker: boolean = false;
+  @property({ type: Number }) view: number = this.justTimePicker ? 4 : 0;
+  @property({ type: Array }) selectedTime: number[] = [];
+  @property({ type: Number }) minimumYear: number = 1100;
   // must be sorted past[index: 0] -> future[index: 1]
   // 2D array -> [[2020, 2, 3]] || [[2020, 2, 3], [2020, 6, 1]] || []
-  @property({ type: Array }) selectedDate = [];
+  @property({ type: Array }) selectedDate: number[] = [];
   // required: initialDate
-  @property({ type: Array }) initialDate;
+  @property({ type: Array }) initialDate: number[] | undefined;
   @property({
     type: Array,
     attribute: false
@@ -27,36 +27,6 @@ export class DatePicker extends BaseElement {
   //   type: Number,
   //   attribute: false
   // }) yearForDecadeCalculation = this.initialDate[0];
-
-  protected _clockSwitch = () => this.view = this.view === 4 ? 0 : 4;
-
-  protected _changeView = (next: Boolean = true) => {
-    let nextView = this.view + (next ? 1 : -1);
-    if (nextView < 4 && nextView > -1)
-      this.view = nextView;
-  };
-
-  protected gotoDate = (newDate: Array<number>) => {
-    this.onScreenDate = newDate;
-    this.view = 0;
-    // this.requestUpdate();
-  };
-
-  _calculateDisplayingDate = (next: Boolean = true): Array<number> => {
-    let [currentYear, currentMonth, day]: Array<number> = this.onScreenDate;
-    const changeFactor: number = next ? 1 : -1;
-    const newMonth: number = (currentMonth + changeFactor) % 12;
-    const month: number = newMonth < 0 ? 11 : newMonth;
-    const year: number = (newMonth < 0 || (!newMonth && next)) ? currentYear + changeFactor : currentYear;
-
-    return [year, month, day];
-  };
-
-  changeDisplayingDate = (onScreenDate: Array<number>) => {
-    this.onScreenDate = onScreenDate;
-    // change decade too to onScreenDate[0] but,
-    // again not sure where to put decade yet 🤔
-  };
 
   static styles = css`
     .date-picker {
@@ -85,10 +55,10 @@ export class DatePicker extends BaseElement {
       transform: translate3d(-25px, 0, 0);
       /* transform: scale(0.85); */
     }
-
   `;
 
   protected render(): TemplateResult {
+    this._log('render');
     return html`
       <!-- disableNavigation default -> false -->
       <div class="date-picker">
@@ -107,4 +77,43 @@ export class DatePicker extends BaseElement {
       </div>
     `;
   }
+
+  clockSwitch() {
+    this._log('clockSwitch');
+    this.view = this.view === 4 ? 0 : 4;
+  }
+
+  changeView(next: boolean = true) {
+    this._log('changeView');
+
+    let nextView = this.view + (next ? 1 : -1);
+    if (nextView > 4 && nextView < -1) return;
+    this.view = nextView;
+  };
+
+  gotoDate(newDate: Array<number>) {
+    this._log('gotoDate');
+    this.onScreenDate = newDate;
+    this.view = 0;
+    // this.requestUpdate();
+  };
+
+  changeDisplayingDate(onScreenDate: Array<number>) {
+    this._log('changeDisplayingDate');
+    this.onScreenDate = onScreenDate;
+    // change decade too to onScreenDate[0] but,
+    // again not sure where to put decade yet 🤔
+  };
+
+  private calculateDisplayingDate(next: Boolean = true): Array<number> {
+    this._log('calculateDisplayingDate');
+
+    let [currentYear, currentMonth, day]: Array<number> = this.onScreenDate as number[];
+    const changeFactor: number = next ? 1 : -1;
+    const newMonth: number = (currentMonth + changeFactor) % 12;
+    const month: number = newMonth < 0 ? 11 : newMonth;
+    const year: number = (newMonth < 0 || (!newMonth && next)) ? currentYear + changeFactor : currentYear;
+
+    return [year, month, day];
+  };
 }
