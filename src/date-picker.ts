@@ -29,7 +29,7 @@ export class DatePicker extends BaseElement {
   // }) yearForDecadeCalculation = this.initialDate[0];
 
   static styles = css`
-    .date-picker {
+    :host {
       margin: 0 auto;
       background-color: #ffffff;
       border-radius: 8px;
@@ -42,7 +42,7 @@ export class DatePicker extends BaseElement {
       padding: 0 8px 16px;
     }
 
-    .date-picker .views {
+    .views {
       position: relative;
     }
 
@@ -61,18 +61,15 @@ export class DatePicker extends BaseElement {
     this._log('render');
     return html`
       <!-- disableNavigation default -> false -->
-      <div class="date-picker">
-        ${
-      this.view < 4 ? html`<header-element
-          ?disableNavigation=${false}
-          title="March 2020"
-        >
-        </header-element>` : ''
-      }
-        <div class="views-container">
-          <div class="views">
-            <calendar-element class="${`view${this.view === 0 ? '' : ' hide-view'}`}"></calendar-element>
-          </div>
+      ${this.view < 4 ?
+        html`<header-element
+        ?disableNavigation=${false}
+        title="March 2020"
+      >
+      </header-element>` : ''}
+      <div class="views-container">
+        <div class="views">
+          <calendar-element class="${`view${this.view === 0 ? '' : ' hide-view'}`}"></calendar-element>
         </div>
       </div>
     `;
@@ -105,7 +102,7 @@ export class DatePicker extends BaseElement {
     // again not sure where to put decade yet 🤔
   };
 
-  private calculateDisplayingDate(next: Boolean = true): Array<number> {
+  protected calculateDisplayingDate(next: Boolean = true): Array<number> {
     this._log('calculateDisplayingDate');
 
     let [currentYear, currentMonth, day]: Array<number> = this.onScreenDate as number[];
