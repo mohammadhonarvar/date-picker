@@ -63,10 +63,10 @@ export class DatePicker extends BaseElement {
     return html`
       <!-- disableNavigation default -> false -->
       ${this.view < 4 ?
-      html`<header-element title="March 2020" debug></header-element>` : ''}
+        html`<header-element title="March 2020"></header-element>` : ''}
       <div class="views-container">
         <div class="views">
-          <calendar-base-element class="${`view${this.view === 0 ? '' : ' hide-view'}`}" debug></calendar-base-element>
+          <calendar-base-element class="${`view${this.view === 0 ? '' : ' hide-view'}`}" ></calendar-base-element>
         </div>
       </div>
     `;
