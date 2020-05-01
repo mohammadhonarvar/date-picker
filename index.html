@@ -36,35 +36,29 @@
             text-rendering: optimizeLegibility;
             -moz-osx-font-smoothing: grayscale;
         }
-
-        date-picker {
+        
+        .date-picker-container {
             width: 320px;
             margin: 50px auto;
+            text-align: center;
+        }
+        
+        date-picker {
+            --theme-background: #212121;
         }
     </style>
 </head>
 
 <body>
-  <!-- <date-picker></date-picker> -->
-    <week-label-list></week-label-list>
+    <div class="date-picker-container">
+        <week-labels></week-labels>
+        <date-picker></date-picker>
+    </div>
     <!-- https://polyfill.io/v3/url-builder/ -->
     <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=requestAnimationFrame,requestIdleCallback,scrollY,CustomEvent,document.querySelector,localStorage,fetch"></script> -->
     <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script type="module" src="js/date-picker.js"></script>
-    <script type="module" src="js/week-label.js"></script>
-    <script>
-      setTimeout(() => {
-        document.querySelector('week-label-list').weekDayList = [
-          { name: 'Sun', shortName: 'S' },
-          { name: 'Mon', shortName: 'M' },
-          { name: 'Tue', shortName: 'T' },
-          { name: 'Wed', shortName: 'W' },
-          { name: 'Thu', shortName: 'T' },
-          { name: 'Fri', shortName: 'F' },
-          { name: 'Sat', shortName: 'S' }
-        ]
-      }, 2000);
-    </script>
+    <script type="module" src="js/components/week-labels.js"></script>
     <noscript>
     <p style="text-align: center; margin-top: 1em; font-size: 1.1em;" dir="ltr">
       Please enable JavaScript to view this website.

@@ -1,6 +1,6 @@
 import { html, css, customElement, TemplateResult } from 'lit-element';
-
 import { BaseElement } from '../base-element';
+import './week-labels';
 
 @customElement('calendar-element')
 export default class CalendarElement extends BaseElement {
@@ -62,6 +62,8 @@ export default class CalendarElement extends BaseElement {
   `;
 
   protected render(): TemplateResult {
-    return html`<p style="text-align: center;">Calendar Ma</p>`;
+    return html`
+      <week-labels useShortName></week-labels>
+    `;
   }
 }
