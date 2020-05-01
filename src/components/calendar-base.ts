@@ -22,6 +22,9 @@ export default class CalendarBaseElement extends BaseElement {
   @property({ type: String })
   initDate: string = '1100-1-1';
 
+  @property({ type: Array })
+  selectedDateList: number[][] = [];
+
   @property({ type: String })
   onScreenDate: string = this.initDate;
 
@@ -29,10 +32,16 @@ export default class CalendarBaseElement extends BaseElement {
   shortWeekLabel: boolean = true;
 
   @property({ type: Boolean })
-  onlyShowCurrentMonthDays: boolean = true;
+  rangeSelect: boolean = false;
+
+  @property({ type: Boolean })
+  onlyShowCurrentMonthDays: boolean = false;
 
   @property({ type: Boolean })
   hideLastFadedRow: boolean = false;
+
+  @property({ type: Boolean })
+  highlightToday: boolean = true;
 
   @property({ type: Array })
   monthsDaysCount: number[] = monthsDaysCount;
@@ -46,8 +55,29 @@ export default class CalendarBaseElement extends BaseElement {
   private calendarInitDate: number[] = this.convertDateToArray(this.initDate);
   private calendarOnScreenDate: number[] = this.convertDateToArray(this.onScreenDate);
 
+  private _calculateSelectedDayList = () => {
+    let days: Array<number> = [];
+    let [onScreenYear, onScreenMonth]: Array<number> = this.calendarOnScreenDate;
+
+    this.selectedDateList.forEach(([selectedDateYear, selectedDateMonth, selectedDateDay]: Array<number>) => {
+      if (selectedDateYear === onScreenYear &&
+        selectedDateMonth === onScreenMonth)
+        days.push(selectedDateDay);
+    });
+
+    return days;
+  };
+
+  private _selectedDayList = this._calculateSelectedDayList();
+
   static styles = css`
-    .week-labels-row .calendar-day,
+
+    .calendar-row {
+      display: flex;
+      padding: 0 8px;
+      margin: 6px 0;
+    }
+
     .calendar-row .calendar-day {
       /* background-color: tomato; */
       /* margin: 2px; */
@@ -56,7 +86,6 @@ export default class CalendarBaseElement extends BaseElement {
       position: relative;
     }
 
-    .week-labels-row .calendar-day::after,
     .calendar-row .calendar-day::after {
       content: "";
       float:left;
@@ -70,6 +99,22 @@ export default class CalendarBaseElement extends BaseElement {
       border-radius: 50%;
     }
 
+
+    .calendar-row .current-date-highlight {
+      color: #A0144F;
+      background-color: #A0144F23;
+    }
+
+    .calendar-row .selected-day {
+      background: #A0144F;
+      color: rgba(255, 255, 255, 0.87);
+    }
+
+    .calendar-row .in-range-day {
+      background: #A0144F23;
+      border-radius: 0;
+    }
+
     .calendar-day-data {
       position: absolute;
       left: 0;
@@ -81,15 +126,17 @@ export default class CalendarBaseElement extends BaseElement {
       justify-content: center;
     }
 
-    .calendar-row .current-date-highlight {
-      color: #A0144F;
-      background-color: #A0144F23;
+    .calendar-row .in-range-day,
+    .calendar-day-data[data-range-edge="true"],
+    .calendar-day-data[data-start-range-edge] {
+      transition: ease-in 0.15s;
     }
 
-    .calendar-row .selected-day {
-      background: #A0144F;
-      color: rgba(255, 255, 255, 0.87);
+
+    .calendar-row .fade {
+      color: rgba(0, 0, 0, 0.38);
     }
+
   `;
 
   protected shouldUpdate(): boolean {
@@ -116,22 +163,35 @@ export default class CalendarBaseElement extends BaseElement {
     super.update(changedProperties);
   }
 
+  private calendarWeekList = this.calculateCalendar(1);
+
+  // Remove::start
+  // this div is here just to prove MHF something :D
+  changeDate = () => {
+    this.calendarOnScreenDate = [2020, 8, 1];
+    this.calendarWeekList = this.calculateCalendar(1);
+    this.requestUpdate();
+  };
+  // Remove::end
+
   protected render(): TemplateResult {
     this._log('render');
 
-    const calendarWeekList = this.calculateCalendar(1);
-
     return html`
+      <!-- Remove::start -->
+      <!-- this div is here just to prove MHF something :D -->
+      <div @click="${this.changeDate}">Change Screen Date</div>
+      <!-- Remove::end -->
       <week-labels .weekLabelList="${weekDayList}"></week-labels>
-      ${calendarWeekList.map((week: number[]) => {
-        return html`
+      ${this.calendarWeekList.map((week: number[], index: number) => {
+      return html`
           <div class="calendar-row">
-            ${week.map((day: number, index: number) => {
-              return this.getWeekDaysTemplate(day, index);
-            })}
+            ${week.map((day: number) => {
+        return this.getWeekDaysTemplate(day, index);
+      })}
           </div>
         `
-      })}
+    })}
     `;
   }
 
@@ -148,12 +208,12 @@ export default class CalendarBaseElement extends BaseElement {
 
     const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
     const notForThisMonth = ((index === 0 && day > 7) || (index > 2 && day < 15));
-    // const selected = selectedDays.includes(day);
+    const selected = this._selectedDayList.includes(day);
     // const edge = selected && props.selectedDate.length > 1;
     return html`
       <div
-        class="calendar-day ${(notForThisMonth ? 'fade' : today === day ? ' current-date-highlight' : '')}"
-        @click="${this.onDayClick}"
+        class="calendar-day${(notForThisMonth ? ' fade' : selected ? ' selected-day' : (this.highlightToday && today === day) ? ' current-date-highlight' : '')}"
+        @click="${() => this.onDayClick(day)}"
       >
       <div class="calendar-day-data">
         ${this.onlyShowCurrentMonthDays && notForThisMonth ? '' : day}
@@ -163,8 +223,17 @@ export default class CalendarBaseElement extends BaseElement {
   }
 
   // TODO: Complete this method
-  protected onDayClick() {
+  protected onDayClick(day: number) {
     this._log('onDayClick');
+    let date = [this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], day];
+    if (this.rangeSelect && this.selectedDateList.length === 1) {
+      this.selectedDateList = this.sortRangeSelectedDates([...this.selectedDateList, date]);
+    } else {
+      this.selectedDateList = [date];
+    }
+    this._selectedDayList = this._calculateSelectedDayList();
+    // TODO:
+    // call onDateChange callback (user must provide) and pass the date
   }
 
   private convertDateToArray(date: string): number[] {
@@ -191,8 +260,10 @@ export default class CalendarBaseElement extends BaseElement {
     return isLeap;
   };
 
+  // dude WTF is leapMonthIndex as a parameter ! why as a parameter !
   protected calculateCalendar(leapMonthIndex: number): number[][] {
     this._log('calculateCalendar');
+    console.log("%cCalculating started!", "background-color: gold; color: #212121");
 
     let date = new Date(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], 1);
     // if (props.isSolar) {
@@ -233,12 +304,12 @@ export default class CalendarBaseElement extends BaseElement {
     return calendar;
   }
 
-  // protected sortRangeSelectedDates(selectedDates: Array<Number> | undefined) {
-  //   if (!selectedDates) return [];
+  protected sortRangeSelectedDates(selectedDates: number[][] | undefined) {
+    if (!selectedDates) return [];
 
-  //   const startDate = Date.parse(selectedDates[0].toString());
-  //   const endDate = Date.parse(selectedDates[1].toString());
+    const startDate = Date.parse(selectedDates[0].toString());
+    const endDate = Date.parse(selectedDates[1].toString());
 
-  //   return startDate > endDate ? [selectedDates[1], selectedDates[0]] : selectedDates;
-  // };
+    return startDate > endDate ? [selectedDates[1], selectedDates[0]] : selectedDates;
+  };
 }
