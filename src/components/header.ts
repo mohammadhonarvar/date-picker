@@ -9,7 +9,7 @@ export class HeaderElement extends BaseElement {
   @property({ type: String })
   title: string = '';
 
-  @property({ type: Boolean })
+  @property({ type: Boolean, attribute: 'disable' })
   disableNavigation: boolean = false;
 
   // FIX THEME & CSS VARs
