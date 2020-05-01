@@ -2,16 +2,16 @@
 <html>
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Date-picker</title>
+  <title>Date-picker</title>
 
-    <base href="/" />
+  <base href="/" />
 
-    <!-- <link rel="preconnect" href="https://polyfill.io/" crossorigin /> -->
+  <!-- <link rel="preconnect" href="https://polyfill.io/" crossorigin /> -->
 
-    <!-- <script>
+  <!-- <script>
     window.polymerSkipLoadingFontRoboto = true;
 
     if ('serviceWorker' in navigator) {
@@ -25,41 +25,34 @@
     window.process = { env: { NODE_ENV: 'production' } };
   </script> -->
 
-    <!-- <link rel="stylesheet" href="font/font.css" /> -->
+  <!-- <link rel="stylesheet" href="font/font.css" /> -->
 
-    <style>
-        body {
-            margin: 0;
-            background-color: #A0144F;
-            font-family: "Iran Sans", "Roboto", "Tahoma", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            -webkit-font-smoothing: antialiased;
-            text-rendering: optimizeLegibility;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        .date-picker-container {
-            width: 320px;
-            margin: 50px auto;
-            text-align: center;
-        }
-        
-        date-picker {
-            --theme-background: #212121;
-        }
-    </style>
+  <style>
+    body {
+      margin: 0;
+      background-color: #A0144F;
+      font-family: "Iran Sans", "Roboto", "Tahoma", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    date-picker {
+      width: 320px;
+      margin: 50px auto;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="date-picker-container">
-        <week-labels></week-labels>
-        <date-picker></date-picker>
-    </div>
-    <!-- https://polyfill.io/v3/url-builder/ -->
-    <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=requestAnimationFrame,requestIdleCallback,scrollY,CustomEvent,document.querySelector,localStorage,fetch"></script> -->
-    <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-    <script type="module" src="js/date-picker.js"></script>
-    <script type="module" src="js/components/week-labels.js"></script>
-    <noscript>
+  <date-picker></date-picker>
+  <!-- https://polyfill.io/v3/url-builder/ -->
+  <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=requestAnimationFrame,requestIdleCallback,scrollY,CustomEvent,document.querySelector,localStorage,fetch"></script> -->
+  <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script type="module" src="js/date-picker.js"></script>
+  <script type="module" src="js/components/week-labels.js"></script>
+  <noscript>
     <p style="text-align: center; margin-top: 1em; font-size: 1.1em;" dir="ltr">
       Please enable JavaScript to view this website.
     </p>
