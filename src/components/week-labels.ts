@@ -23,7 +23,6 @@ export class WeekLabelList extends BaseElement {
       margin-bottom: 8px;
       font-weight: 500;
       font-size: 0.85em;
-      cursor: default;
       color: rgba(0, 0, 0, 0.38);
     }
 
@@ -42,6 +41,31 @@ export class WeekLabelList extends BaseElement {
       padding-top: 100%;
     }
 
+    .calendar-day-data {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calendar-day-data[data-range-edge="true"],
+    .calendar-day-data[data-start-range-edge] {
+      transition: ease-in 0.15s;
+    }
+
+    .calendar-day-data[data-range-edge="true"] {
+      border-radius: 0 50% 50% 0;
+      background: #A0144F23;
+    }
+
+    .calendar-day-data[data-start-range-edge] {
+      border-radius: 50% 0 0 50%;
+    }
+
   `;
 
   protected shouldUpdate(): boolean {
@@ -52,12 +76,12 @@ export class WeekLabelList extends BaseElement {
   protected render(): TemplateResult {
     return html`
       ${(this.weekLabelList as WeekLabelInterface[]).map(({ shortName, name }: WeekLabelInterface) => {
-        return html`
+      return html`
           <div class="calendar-day">
             <div class="calendar-day-data">${this.useShortName ? shortName : name}</div>
           </div>
         `
-      })
-    }`;
+    })
+      }`;
   }
 }
