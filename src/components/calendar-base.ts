@@ -101,11 +101,8 @@ export default class CalendarBaseElement extends BaseElement {
     this._log('update');
 
     // Prevent re-rendering when shortWeekLabel is changed
-    if (changedProperties.has('shortWeekLabel')) {
-      if (this.shortWeekLabel) {
-        this.weekLabelsElement.setAttribute('short-name', '');
-      }
-      else {
+    if (changedProperties.has('shortWeekLabel') && !this.shortWeekLabel) {
+      if (this.weekLabelsElement) {
         this.weekLabelsElement.removeAttribute('short-name');
       }
       return;
@@ -136,6 +133,14 @@ export default class CalendarBaseElement extends BaseElement {
         `
       })}
     `;
+  }
+
+  protected updated() {
+    this._log('updated');
+
+    if (this.weekLabelsElement && this.shortWeekLabel) {
+      this.weekLabelsElement.setAttribute('short-name', '');
+    }
   }
 
   protected getWeekDaysTemplate(day: number, index: number): TemplateResult {
@@ -187,6 +192,8 @@ export default class CalendarBaseElement extends BaseElement {
   };
 
   protected calculateCalendar(leapMonthIndex: number): number[][] {
+    this._log('calculateCalendar');
+
     let date = new Date(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], 1);
     // if (props.isSolar) {
     //   const newDate = props.toGregorian(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1] + 1, 1);
@@ -209,7 +216,7 @@ export default class CalendarBaseElement extends BaseElement {
     let totalCells = currentMonthDaysCount + startWeekAtIndex;
 
     let calendar: Array<number[]> = [];
-    let week = Array.from({ length: startWeekAtIndex }, (v, k) => (previousMonthDaysCount - startWeekAtIndex) + k + 1);
+    let week = Array.from({ length: startWeekAtIndex }, (_v, k) => (previousMonthDaysCount - startWeekAtIndex) + k + 1);
 
     for (let i = startWeekAtIndex + 1; calendar.length < 6; ++i) {
       const day = i > totalCells ? i - totalCells : i - startWeekAtIndex;
