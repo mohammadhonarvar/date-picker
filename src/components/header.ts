@@ -51,6 +51,8 @@ export class HeaderElement extends BaseElement {
   `;
 
   protected render(): TemplateResult {
+    this._log('render');
+    
     return html`
       <div class="previous" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('header-backward-clicked', undefined); }}">
         ${arrowBackward}
