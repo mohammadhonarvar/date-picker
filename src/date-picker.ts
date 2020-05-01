@@ -29,9 +29,9 @@ export class DatePicker extends BaseElement {
   // }) yearForDecadeCalculation = this.initialDate[0];
 
   static styles = css`
-    .date-picker {
+    :host {
+      display: block;
       margin: 0 auto;
-      position: relative;
       background-color: var(--theme-background, #ffffff);
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -61,18 +61,12 @@ export class DatePicker extends BaseElement {
   protected render(): TemplateResult {
     this._log('render');
     return html`
-      <div class="date-picker">
-        <!-- disableNavigation default -> false -->
-        ${this.view < 4 ?
-        html`<header-element
-          ?disableNavigation=${false}
-          title="March 2020"
-        >
-        </header-element>` : ''}
-        <div class="views-container">
-          <div class="views">
-            <calendar-element class="${`view${this.view === 0 ? '' : ' hide-view'}`}"></calendar-element>
-          </div>
+      <!-- disableNavigation default -> false -->
+      ${this.view < 4 ?
+      html`<header-element title="March 2020"></header-element>` : ''}
+      <div class="views-container">
+        <div class="views">
+          <calendar-element class="${`view${this.view === 0 ? '' : ' hide-view'}`}"></calendar-element>
         </div>
       </div>
     `;
