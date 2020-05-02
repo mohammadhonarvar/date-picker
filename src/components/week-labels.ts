@@ -69,11 +69,13 @@ export class WeekLabelList extends BaseElement {
   `;
 
   protected shouldUpdate(): boolean {
-    console.log(this.useShortName);
+    this._log('shouldUpdate');
     return Array.isArray(this.weekLabelList) && this.weekLabelList.length > 0;
   }
 
   protected render(): TemplateResult {
+    this._log('render');
+    
     return html`
       ${(this.weekLabelList as WeekLabelInterface[]).map(({ shortName, name }: WeekLabelInterface) => {
       return html`
