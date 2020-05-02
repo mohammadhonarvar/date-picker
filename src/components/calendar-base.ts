@@ -54,21 +54,8 @@ export default class CalendarBaseElement extends BaseElement {
 
   private calendarInitDate: number[] = this.convertDateToArray(this.initDate);
   private calendarOnScreenDate: number[] = this.convertDateToArray(this.onScreenDate);
-
-  private _calculateSelectedDayList = () => {
-    let days: Array<number> = [];
-    let [onScreenYear, onScreenMonth]: Array<number> = this.calendarOnScreenDate;
-
-    this.selectedDateList.forEach(([selectedDateYear, selectedDateMonth, selectedDateDay]: Array<number>) => {
-      if (selectedDateYear === onScreenYear &&
-        selectedDateMonth === onScreenMonth)
-        days.push(selectedDateDay);
-    });
-
-    return days;
-  };
-
-  private _selectedDayList = this._calculateSelectedDayList();
+  private selectedDayList = this.calculateSelectedDayList();
+  private calendarWeekList = this.calculateCalendar(1);
 
   static styles = css`
 
@@ -151,8 +138,8 @@ export default class CalendarBaseElement extends BaseElement {
     if (changedProperties.has('shortWeekLabel') && !this.shortWeekLabel) {
       if (this.weekLabelsElement) {
         this.weekLabelsElement.removeAttribute('short-name');
+        return;
       }
-      return;
     }
 
     // Create array of initDate when it's changed
@@ -162,17 +149,6 @@ export default class CalendarBaseElement extends BaseElement {
 
     super.update(changedProperties);
   }
-
-  private calendarWeekList = this.calculateCalendar(1);
-
-  // Remove::start
-  // this div is here just to prove MHF something :D
-  changeDate = () => {
-    this.calendarOnScreenDate = [2020, 8, 1];
-    this.calendarWeekList = this.calculateCalendar(1);
-    this.requestUpdate();
-  };
-  // Remove::end
 
   protected render(): TemplateResult {
     this._log('render');
@@ -184,14 +160,15 @@ export default class CalendarBaseElement extends BaseElement {
       <!-- Remove::end -->
       <week-labels .weekLabelList="${weekDayList}"></week-labels>
       ${this.calendarWeekList.map((week: number[], index: number) => {
-      return html`
-          <div class="calendar-row">
-            ${week.map((day: number) => {
-        return this.getWeekDaysTemplate(day, index);
-      })}
-          </div>
-        `
-    })}
+        return html`
+            <div class="calendar-row">
+              ${week.map((day: number) => {
+                return this.getWeekDaysTemplate(day, index);
+              })}
+            </div>
+          `
+        })
+      }
     `;
   }
 
@@ -204,11 +181,11 @@ export default class CalendarBaseElement extends BaseElement {
   }
 
   protected getWeekDaysTemplate(day: number, index: number): TemplateResult {
-    this._log('getCalendarWeekTemplate');
+    // this._log('getCalendarWeekTemplate');
 
     const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
     const notForThisMonth = ((index === 0 && day > 7) || (index > 2 && day < 15));
-    const selected = this._selectedDayList.includes(day);
+    const selected = this.selectedDayList.includes(day);
     // const edge = selected && props.selectedDate.length > 1;
     return html`
       <div
@@ -231,7 +208,7 @@ export default class CalendarBaseElement extends BaseElement {
     } else {
       this.selectedDateList = [date];
     }
-    this._selectedDayList = this._calculateSelectedDayList();
+    this.selectedDayList = this.calculateSelectedDayList();
     // TODO:
     // call onDateChange callback (user must provide) and pass the date
   }
@@ -263,28 +240,32 @@ export default class CalendarBaseElement extends BaseElement {
   // dude WTF is leapMonthIndex as a parameter ! why as a parameter !
   protected calculateCalendar(leapMonthIndex: number): number[][] {
     this._log('calculateCalendar');
-    console.log("%cCalculating started!", "background-color: gold; color: #212121");
 
-    let date = new Date(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], 1);
+    let date = new Date(`${this.calendarOnScreenDate[0]}/${this.calendarOnScreenDate[1]}/1`);
     // if (props.isSolar) {
     //   const newDate = props.toGregorian(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1] + 1, 1);
     //   date = new Date(newDate[0], newDate[1] - 1, newDate[2]);
     // }
 
-    const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1]] + (this.calendarOnScreenDate[1] === leapMonthIndex ? this.leapYearCalculation(this.calendarOnScreenDate[0]) : 0);
+    const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] + (this.calendarOnScreenDate[1] === leapMonthIndex ? this.leapYearCalculation(this.calendarOnScreenDate[0]) : 0);
 
     let tempYear = this.calendarOnScreenDate[0];
-    let previousMonthDaysIndex = this.calendarOnScreenDate[1] - 1;
-    if (this.calendarOnScreenDate[1] - 1 === -1) {
+    let previousMonthIndex: number;
+    if (this.calendarOnScreenDate[1] - 2 === -1) {
       tempYear--;
-      previousMonthDaysIndex = 11;
+      previousMonthIndex = 11;
     }
-    const previousMonthDaysCount = this.monthsDaysCount[previousMonthDaysIndex] + (this.calendarOnScreenDate[1] - 1 === leapMonthIndex ? this.leapYearCalculation(tempYear) : 0);
+    else {
+      previousMonthIndex = this.calendarOnScreenDate[1] - 2;
+    }
+    const previousMonthDaysCount = this.monthsDaysCount[previousMonthIndex] + (this.calendarOnScreenDate[1] - 1 === leapMonthIndex ? this.leapYearCalculation(tempYear) : 0);
 
     const startWeekAtIndex = date.getDay();
+    this._log('startWeekAtIndex: %s', startWeekAtIndex);
     // console.log(startWeekAtIndex);
 
     let totalCells = currentMonthDaysCount + startWeekAtIndex;
+    // this._log('totalCells: %s', totalCells);
 
     let calendar: Array<number[]> = [];
     let week = Array.from({ length: startWeekAtIndex }, (_v, k) => (previousMonthDaysCount - startWeekAtIndex) + k + 1);
@@ -299,17 +280,42 @@ export default class CalendarBaseElement extends BaseElement {
         continue;
       }
       week.push(day);
-
+      // this._log('week: %o', week);
     }
+    // this._log('calendar: %o', calendar);
     return calendar;
   }
 
-  protected sortRangeSelectedDates(selectedDates: number[][] | undefined) {
+  protected sortRangeSelectedDates(selectedDates: number[][] | undefined): number[][] {
     if (!selectedDates) return [];
+    this._log('sortRangeSelectedDates');
 
     const startDate = Date.parse(selectedDates[0].toString());
     const endDate = Date.parse(selectedDates[1].toString());
 
     return startDate > endDate ? [selectedDates[1], selectedDates[0]] : selectedDates;
   };
+
+  protected calculateSelectedDayList() {
+    this._log('calculateSelectedDayList');
+    let days: Array<number> = [];
+    let [onScreenYear, onScreenMonth]: Array<number> = this.calendarOnScreenDate;
+
+    this.selectedDateList.forEach(([selectedDateYear, selectedDateMonth, selectedDateDay]: Array<number>) => {
+      if (selectedDateYear === onScreenYear &&
+        selectedDateMonth === onScreenMonth)
+        days.push(selectedDateDay);
+    });
+
+    return days;
+  };
+
+  // Remove::start
+  // this div is here just to prove MHF something :D
+  changeDate() {
+    this.calendarOnScreenDate = [2020, 5, 2];
+    this.calendarWeekList = this.calculateCalendar(1);
+    this.requestUpdate();
+  };
+  // Remove::end
 }
