@@ -281,3 +281,68 @@ export const baseStyle = css`
     fill: rgba(0, 0, 0, 0.60);
   }
 `;
+
+export const calendarBaseStyle = css`
+  .calendar-row {
+    display: flex;
+    padding: 0 8px;
+    margin: 6px 0;
+  }
+
+  .calendar-row .calendar-day {
+    /* background-color: tomato; */
+    /* margin: 2px; */
+    font-weight: 500;
+    flex: 1 0 auto;
+    position: relative;
+  }
+
+  .calendar-row .calendar-day::after {
+    content: "";
+    float:left;
+    display: block;
+    padding-top: 100%;
+  }
+
+  .calendar-row .calendar-day {
+    color: rgba(0, 0, 0, 0.87);
+    cursor: pointer;
+    border-radius: 50%;
+  }
+
+  .calendar-row .current-date-highlight {
+    color: #A0144F;
+    background-color: #A0144F23;
+  }
+
+  .calendar-row .selected-day {
+    background: #A0144F;
+    color: rgba(255, 255, 255, 0.87);
+  }
+
+  .calendar-row .in-range-day {
+    background: #A0144F23;
+    border-radius: 0;
+  }
+
+  .calendar-day-data {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .calendar-row .in-range-day,
+  .calendar-day-data[data-range-edge="true"],
+  .calendar-day-data[data-start-range-edge] {
+    transition: ease-in 0.15s;
+  }
+
+  .calendar-row .fade {
+    color: rgba(0, 0, 0, 0.38);
+  }
+`;

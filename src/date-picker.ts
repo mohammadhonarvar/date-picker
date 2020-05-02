@@ -2,7 +2,8 @@ import { html, css, customElement, TemplateResult, property } from 'lit-element'
 
 import { BaseElement } from './base-element';
 import './components/header';
-import './components/calendar-base';
+import './components/gregorian-calendar';
+import './components/persian-calendar';
 
 @customElement('date-picker')
 export class DatePicker extends BaseElement {
@@ -66,7 +67,17 @@ export class DatePicker extends BaseElement {
         html`<header-element title="March 2020"></header-element>` : ''}
       <div class="views-container">
         <div class="views">
-          <calendar-base-element class="${`view${this.view === 0 ? '' : ' hide-view'}`}" ></calendar-base-element>
+          <!-- <gregorian-calendar-element
+            debug
+            class="${`view${this.view === 0 ? '' : ' hide-view'}`}"
+          >
+          </gregorian-calendar-element> -->
+          <persian-calendar-element
+            debug
+            date="1399-2-13"
+            class="${`view${this.view === 0 ? '' : ' hide-view'}`}"
+          >
+          </persian-calendar-element>
         </div>
       </div>
     `;
