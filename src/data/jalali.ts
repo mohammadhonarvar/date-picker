@@ -1,13 +1,13 @@
 export const monthsDaysCount= [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
 
 export const weekDayList = [
+  { name: 'شنبه', shortName: 'ش' },
   { name: 'یک شنبه', shortName: 'ی' },
   { name: 'دوشنبه', shortName: 'د' },
   { name: 'سه شنبه', shortName: 'س' },
   { name: 'چهارشنبه', shortName: 'چ' },
   { name: 'پنجشنبه', shortName: 'پ' },
-  { name: 'جمعه', shortName: 'ج' },
-  { name: 'شنبه', shortName: 'ش' }
+  { name: 'جمعه', shortName: 'ج' }
 ];
 
 export const monthList = [
