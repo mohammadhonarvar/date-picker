@@ -22,7 +22,7 @@ export default class PersianCalendarElement extends CalendarBaseElement {
   protected calendarOnScreenDate: number[] = convertStringToNumberArray(this.onScreenDate, '-');
   protected selectedDayList = this.calculateSelectedDayList();
   protected calendarWeekList = this.calculateCalendar();
-  protected leapMonthIndex: number = 1;
+  protected leapMonthIndex: number = 11;
   protected weekDayList = weekDayList;
 
   static styles = calendarBaseStyle;
@@ -157,34 +157,33 @@ export default class PersianCalendarElement extends CalendarBaseElement {
   protected calculateCalendar(): number[][] {
     this._log('calculateCalendar');
 
-    const newDate = this.convertToGregorian(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], this.calendarOnScreenDate[2])
-    let date = new Date(`${newDate[0]}/${newDate[1]}/1`);
+    const newDate = this.convertToGregorian(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], 1);
+    let date = new Date(newDate[0], newDate[1] - 1, newDate[2]);
 
     const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] + (this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex ? this.leapYearCalculation(this.calendarOnScreenDate[0]) : 0);
 
     let tempYear = this.calendarOnScreenDate[0];
-    let previousMonthIndex: number;
-    if (this.calendarOnScreenDate[1] - 2 === -1) {
+    let previousMonthIndex: number = this.calendarOnScreenDate[1] - 2;
+    if (previousMonthIndex < 0) {
       tempYear--;
       previousMonthIndex = 11;
     }
-    else {
-      previousMonthIndex = this.calendarOnScreenDate[1] - 2;
-    }
-    const previousMonthDaysCount = this.monthsDaysCount[previousMonthIndex] + (this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex ? this.leapYearCalculation(tempYear) : 0);
+    const previousMonthDaysCount = this.monthsDaysCount[previousMonthIndex] + (previousMonthIndex === this.leapMonthIndex ? this.leapYearCalculation(tempYear) : 0);
+
 
     const startWeekAtIndex = date.getDay();
-    this._log('startWeekAtIndex: %s', startWeekAtIndex);
-    // console.log(startWeekAtIndex);
+    // We need to find index of day in the jalali week days
+    let startWeekAtIndexInJalali = startWeekAtIndex + 1;
+    if (startWeekAtIndexInJalali > 6) {
+      startWeekAtIndexInJalali = 0;
+    }
 
-    let totalCells = currentMonthDaysCount + startWeekAtIndex;
-    // this._log('totalCells: %s', totalCells);
+    const totalCells = currentMonthDaysCount + startWeekAtIndexInJalali;
+    const calendar: Array<number[]> = [];
+    let week = Array.from({ length: startWeekAtIndexInJalali }, (_v, k) => (previousMonthDaysCount - startWeekAtIndexInJalali) + k + 1);
 
-    let calendar: Array<number[]> = [];
-    let week = Array.from({ length: startWeekAtIndex }, (_v, k) => (previousMonthDaysCount - startWeekAtIndex) + k + 1);
-
-    for (let i = startWeekAtIndex + 1; calendar.length < 6; ++i) {
-      const day = i > totalCells ? i - totalCells : i - startWeekAtIndex;
+    for (let i = startWeekAtIndexInJalali + 1; calendar.length < 6; ++i) {
+      const day = i > totalCells ? i - totalCells : i - startWeekAtIndexInJalali;
       if (i % 7 === 0) {
         week.push(day);
         calendar.push(week);
@@ -193,9 +192,8 @@ export default class PersianCalendarElement extends CalendarBaseElement {
         continue;
       }
       week.push(day);
-      // this._log('week: %o', week);
     }
-    // this._log('calendar: %o', calendar);
+
     return calendar;
   }
 
@@ -267,9 +265,8 @@ export default class PersianCalendarElement extends CalendarBaseElement {
   // Remove::start
   // this div is here just to prove MHF something :D
   changeDate() {
-    this.calendarOnScreenDate = [1399, 2, 14];
-    this.calendarWeekList = this.calculateCalendar();
-    this.requestUpdate();
+    this._log('changeDate');
+    this.initDate = '1399-2-27';
   };
   // Remove::end
 }
