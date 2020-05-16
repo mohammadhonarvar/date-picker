@@ -10,17 +10,23 @@ export const weekDayList = [
   { name: 'جمعه', shortName: 'ج' }
 ];
 
+export interface MonthInterface {
+  name: string;
+  shortName: string;
+  code: number;
+}
+
 export const monthList = [
-  { name: 'فروردین', shortName: '', code: 0 },
-  { name: 'اردیبهشت', shortName: '', code: 3 },
-  { name: 'خرداد', shortName: '', code: 3 },
-  { name: 'تیر', shortName: '', code: 6 },
-  { name: 'مرداد', shortName: '', code: 1 },
-  { name: 'شهریور', shortName: '', code: 4 },
-  { name: 'مهر', shortName: '', code: 6 },
-  { name: 'آبان', shortName: '', code: 2 },
-  { name: 'آذر', shortName: '', code: 5 },
-  { name: 'دی', shortName: '', code: 0 },
-  { name: 'بهمن', shortName: '', code: 3 },
-  { name: 'اسفند', shortName: '', code: 5 }
+  {name: 'فروردین', shortName: '', code: 0},
+  {name: 'اردیبهشت', shortName: '', code: 3},
+  {name: 'خرداد', shortName: '', code: 3},
+  {name: 'تیر', shortName: '', code: 6},
+  {name: 'مرداد', shortName: '', code: 1},
+  {name: 'شهریور', shortName: '', code: 4},
+  {name: 'مهر', shortName: '', code: 6},
+  {name: 'آبان', shortName: '', code: 2},
+  {name: 'آذر', shortName: '', code: 5},
+  {name: 'دی', shortName: '', code: 0},
+  {name: 'بهمن', shortName: '', code: 3},
+  {name: 'اسفند', shortName: '', code: 5}
 ];
