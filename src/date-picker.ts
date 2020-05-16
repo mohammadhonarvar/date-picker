@@ -1,8 +1,9 @@
-import { html, css, customElement, TemplateResult, property } from 'lit-element';
+import { html, css, customElement, TemplateResult, property, query } from 'lit-element';
 
 import { BaseElement } from './base-element';
 import './components/header';
 import './components/gregorian-calendar';
+import { PersianCalendarElement } from './components/persian-calendar';
 import './components/persian-calendar';
 
 @customElement('date-picker')
@@ -22,6 +23,9 @@ export class DatePicker extends BaseElement {
     type: Array,
     attribute: false
   }) onScreenDate = this.initialDate;
+
+  @query('persian-calendar-element')
+  persianCalendarElement: PersianCalendarElement | undefined;
 
   // not sure where to put it yet😁
   // @property({
@@ -63,8 +67,18 @@ export class DatePicker extends BaseElement {
     this._log('render');
     return html`
       <!-- disableNavigation default -> false -->
-      ${this.view < 4 ?
-        html`<header-element title="March 2020"></header-element>` : ''}
+      ${this.view < 4
+        ?
+        html`
+          <header-element
+            title="March 2020"
+            @prev-month="${() => { this.persianCalendarElement?.renderPrevMonth(); }}"
+            @next-month="${() => { this.persianCalendarElement?.renderNextMonth(); }}"
+            debug
+          >
+          </header-element>`
+        : ''
+      }
       <div class="views-container">
         <div class="views">
           <!-- <gregorian-calendar-element
@@ -74,7 +88,7 @@ export class DatePicker extends BaseElement {
           </gregorian-calendar-element> -->
           <persian-calendar-element
             debug
-            date="1399-2-13"
+            date="1399-2-26"
             class="${`view${this.view === 0 ? '' : ' hide-view'}`}"
           >
           </persian-calendar-element>
