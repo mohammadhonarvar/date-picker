@@ -14,7 +14,7 @@ import './week-labels';
 import { weekDayList, monthsDaysCount, monthList } from '../data/jalali';
 
 @customElement('persian-calendar-element')
-export default class PersianCalendarElement extends CalendarBaseElement {
+export class PersianCalendarElement extends CalendarBaseElement {
   @query('week-labels')
   weekLabelsElement!: HTMLElement;
 
@@ -29,14 +29,8 @@ export default class PersianCalendarElement extends CalendarBaseElement {
 
   constructor() {
     super();
-
     this.monthList = monthList;
     this.monthsDaysCount = monthsDaysCount;
-  }
-
-  protected shouldUpdate(): boolean {
-    if ((this.initDate.split('-')).length !== 3) return false;
-    return true;
   }
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
@@ -160,7 +154,11 @@ export default class PersianCalendarElement extends CalendarBaseElement {
     const newDate = this.convertToGregorian(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], 1);
     let date = new Date(newDate[0], newDate[1] - 1, newDate[2]);
 
-    const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] + (this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex ? this.leapYearCalculation(this.calendarOnScreenDate[0]) : 0);
+    const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] + (
+          this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex
+          ? this.leapYearCalculation(this.calendarOnScreenDate[0])
+          : 0
+        );
 
     let tempYear = this.calendarOnScreenDate[0];
     let previousMonthIndex: number = this.calendarOnScreenDate[1] - 2;
@@ -193,6 +191,9 @@ export default class PersianCalendarElement extends CalendarBaseElement {
       }
       week.push(day);
     }
+
+    const headerTitle = `${this.monthList[this.calendarOnScreenDate[1] - 1]?.name} ${this.calendarOnScreenDate[0]}`;
+    this._fire('date-changed', headerTitle, true);
 
     return calendar;
   }
@@ -266,7 +267,33 @@ export default class PersianCalendarElement extends CalendarBaseElement {
   // this div is here just to prove MHF something :D
   changeDate() {
     this._log('changeDate');
-    this.initDate = '1399-2-27';
+    this.initDate = '1399-3-27';
   };
   // Remove::end
+
+  renderPrevMonth() {
+    this._log('renderPrevMonth');
+
+    if (this.calendarOnScreenDate[1] - 1 < 0) {
+      this.calendarOnScreenDate[1] = 12
+    }
+    else {
+      --this.calendarOnScreenDate[1];
+    }
+    this.calendarWeekList = this.calculateCalendar();
+    this.requestUpdate();
+  }
+
+  renderNextMonth() {
+    this._log('renderNextMonth');
+    
+    if (this.calendarOnScreenDate[1] + 1 > 12) {
+      this.calendarOnScreenDate[1] = 12
+    }
+    else {
+      ++this.calendarOnScreenDate[1]
+    }
+    this.calendarWeekList = this.calculateCalendar();
+    this.requestUpdate();
+  }
 }
