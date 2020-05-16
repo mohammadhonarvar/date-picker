@@ -12,6 +12,16 @@ export class HeaderElement extends BaseElement {
   @property({ type: Boolean, attribute: 'disable' })
   disableNavigation: boolean = false;
 
+  disconnectedCallback() {
+    document.removeEventListener('date-changed', this.onDateChanged.bind(this));
+    super.disconnectedCallback();
+  }
+
+  constructor() {
+    super();
+    document.addEventListener('date-changed', this.onDateChanged.bind(this));
+  }
+
   // FIX THEME & CSS VARs
   static styles = css`
    :host {
@@ -52,15 +62,24 @@ export class HeaderElement extends BaseElement {
 
   protected render(): TemplateResult {
     this._log('render');
-    
+
     return html`
-      <div class="previous" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('header-backward-clicked', undefined); }}">
+      <div class="previous" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('prev-month', undefined); }}">
         ${arrowBackward}
       </div>
       <p @click=${() => { console.log('Go to next view') }}>${this.title}</p>
-      <div class="next" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('header-forward-clicked', undefined); }}">
+      <div class="next" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('next-month', undefined); }}">
         ${arrowForward}
       </div>
     `;
+  }
+
+  private onDateChanged(event: Event | CustomEvent) {
+    this._log('onDateChanged');
+
+    event.stopPropagation();
+    if (!event['detail']) return;
+    const _event = event as CustomEvent;
+    this.title = _event.detail;
   }
 }
