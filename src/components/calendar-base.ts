@@ -7,6 +7,8 @@ import { property } from 'lit-element';
 
 import { BaseElement } from '../base-element';
 
+import { MonthInterface } from '../data/jalali';
+
 export default abstract class CalendarBaseElement extends BaseElement {
   @property({ type: String, attribute: 'date' })
   initDate: string = '1100-1-1';
@@ -36,7 +38,14 @@ export default abstract class CalendarBaseElement extends BaseElement {
   monthsDaysCount: number[] = [];
 
   @property({ type: Array })
-  monthList: unknown[] = [];
+  monthList: MonthInterface[] = [];
+
+  protected shouldUpdate(): boolean {
+    if ((this.initDate.split('-')).length !== 3) {
+      return false;
+    }
+    return true;
+  }
 
   protected abstract calculateCalendar(): {};
   protected abstract leapYearCalculation(param?: unknown): {};
