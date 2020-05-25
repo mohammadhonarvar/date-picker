@@ -18,10 +18,10 @@ export class PersianCalendarElement extends CalendarBaseElement {
   @query('week-labels')
   weekLabelsElement!: HTMLElement;
 
-  protected calendarInitDate: number[] = convertStringToNumberArray(this.initDate, '-');
-  protected calendarOnScreenDate: number[] = convertStringToNumberArray(this.onScreenDate, '-');
-  protected selectedDayList = this.calculateSelectedDayList();
-  protected calendarWeekList = this.calculateCalendar();
+  protected calendarInitDate: number[] = [];
+  protected calendarOnScreenDate: number[] = [];
+  protected selectedDayList: number[] = [];
+  protected calendarWeekList: number[][] = [];
   protected leapMonthIndex: number = 11;
   protected weekDayList = weekDayList;
 
@@ -46,8 +46,10 @@ export class PersianCalendarElement extends CalendarBaseElement {
 
     // Create array of initDate when it's changed
     if (changedProperties.has('initDate')) {
-      this.calendarInitDate = convertStringToNumberArray(this.initDate, '-');
-      this.calendarOnScreenDate = this.calendarInitDate;
+      const initDateArray = convertStringToNumberArray(this.initDate, '-');
+      this.calendarInitDate = initDateArray;
+      // We need a cloned array here
+      this.calendarOnScreenDate = initDateArray.slice(0);
       this.calendarWeekList = this.calculateCalendar();
     }
 
@@ -57,17 +59,19 @@ export class PersianCalendarElement extends CalendarBaseElement {
   protected render(): TemplateResult {
     this._log('render');
 
+    const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
+
     return html`
       <!-- Remove::start -->
       <!-- this div is here just to prove MHF something :D -->
-      <div @click="${this.changeDate}">Change Screen Date</div>
+      <!-- <div @click="${this.changeDate}">Change Screen Date</div> -->
       <!-- Remove::end -->
       <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
       ${this.calendarWeekList.map((week: number[], index: number) => {
         return html`
             <div class="calendar-row">
               ${week.map((day: number) => {
-                return this.getWeekDaysTemplate(day, index);
+                return this.getWeekDaysTemplate(day, index, today);
               })}
             </div>
           `
@@ -84,10 +88,9 @@ export class PersianCalendarElement extends CalendarBaseElement {
     }
   }
 
-  protected getWeekDaysTemplate(day: number, index: number): TemplateResult {
+  protected getWeekDaysTemplate(day: number, index: number, today: number): TemplateResult {
     // this._log('getCalendarWeekTemplate');
 
-    const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
     const notForThisMonth = ((index === 0 && day > 7) || (index > 2 && day < 15));
     const selected = this.selectedDayList.includes(day);
     // const edge = selected && props.selectedDate.length > 1;
@@ -128,7 +131,7 @@ export class PersianCalendarElement extends CalendarBaseElement {
   };
 
   protected calculateIfTodayExist(): boolean {
-    this._log('calculateIfTodayExist');
+    this._log('calculateIfTodayExist: calendarInitDate: %o & calendarOnScreenDate: %o', this.calendarInitDate, this.calendarOnScreenDate);
 
     return (this.calendarInitDate[0] === this.calendarOnScreenDate[0] &&
       this.calendarInitDate[1] === this.calendarOnScreenDate[1]);
@@ -252,8 +255,7 @@ export class PersianCalendarElement extends CalendarBaseElement {
       gregorianDay -= montDays[index];
     }
 
-    const gregorianDate = [gregorianYear, index, gregorianDay];
-    return gregorianDate;
+    return [gregorianYear, index, gregorianDay];
   }
 
   protected leapYearCalculation(year: number): number {
@@ -274,25 +276,27 @@ export class PersianCalendarElement extends CalendarBaseElement {
   renderPrevMonth() {
     this._log('renderPrevMonth');
 
-    if (this.calendarOnScreenDate[1] - 1 < 0) {
-      this.calendarOnScreenDate[1] = 12
+    if (this.calendarOnScreenDate[1] - 1 === 0) {
+      this.calendarOnScreenDate = [this.calendarOnScreenDate[0] - 1, 12, 1];
     }
     else {
       --this.calendarOnScreenDate[1];
     }
+
     this.calendarWeekList = this.calculateCalendar();
     this.requestUpdate();
   }
 
   renderNextMonth() {
     this._log('renderNextMonth');
-    
+
     if (this.calendarOnScreenDate[1] + 1 > 12) {
-      this.calendarOnScreenDate[1] = 12
+      this.calendarOnScreenDate = [this.calendarOnScreenDate[0] + 1, 1, 1];
     }
     else {
-      ++this.calendarOnScreenDate[1]
+      ++this.calendarOnScreenDate[1];
     }
+
     this.calendarWeekList = this.calculateCalendar();
     this.requestUpdate();
   }
