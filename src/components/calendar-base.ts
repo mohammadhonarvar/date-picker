@@ -11,13 +11,19 @@ import { MonthInterface } from '../data/jalali';
 
 export default abstract class CalendarBaseElement extends BaseElement {
   @property({ type: String, attribute: 'date' })
-  initDate: string = '1100-1-1';
+  initDate: string | undefined;
+
+  @property({ type: String, attribute: 'min-date' })
+  protected minDate: string | undefined;
+
+  @property({ type: String, attribute: 'max-date' })
+  protected maxDate: string | undefined;
 
   @property({ type: Array })
   selectedDateList: number[][] = [];
 
   @property({ type: String })
-  onScreenDate: string = this.initDate;
+  onScreenDate: string | undefined;
 
   @property({ type: Boolean })
   shortWeekLabel: boolean = true;
@@ -41,7 +47,16 @@ export default abstract class CalendarBaseElement extends BaseElement {
   monthList: MonthInterface[] = [];
 
   protected shouldUpdate(): boolean {
-    if ((this.initDate.split('-')).length !== 3) {
+    if (
+      !(
+        this.initDate &&
+        (this.initDate.split('-')).length === 3 &&
+        this.minDate &&
+        (this.minDate.split('-')).length === 3 &&
+        this.maxDate &&
+        (this.maxDate.split('-')).length === 3
+      )
+    ) {
       return false;
     }
     return true;

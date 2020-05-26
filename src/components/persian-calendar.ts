@@ -8,6 +8,7 @@ import { customElement, query, TemplateResult, html } from 'lit-element';
 import CalendarBaseElement from './calendar-base';
 import { calendarBaseStyle } from '../base-style';
 import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
+import { fixPersianNumber } from '../utils/fix-persian-number';
 import './week-labels';
 
 // This class is based on gregorian, then we can use the following:
@@ -25,16 +26,42 @@ export class PersianCalendarElement extends CalendarBaseElement {
   protected leapMonthIndex: number = 11;
   protected weekDayList = weekDayList;
 
+  private minDateArray: number[];
+  private minDateGregorianArray: number[];
+  private maxDateArray: number[];
+  private maxDateGregorianArray: number[];
+
   static styles = calendarBaseStyle;
 
   constructor() {
     super();
+
+    this.minDate = '1300-1-1';
+    this.maxDate = '1500-1-1';
+    this.initDate = fixPersianNumber(new Date().toLocaleDateString('fa').replace(/\//g, '-'));
+
+    this.minDateArray = convertStringToNumberArray(this.minDate as string, '-');
+    this.minDateGregorianArray = this.convertToGregorian(this.minDateArray[0], this.minDateArray[1], this.minDateArray[2]);
+
+    this.maxDateArray = convertStringToNumberArray(this.maxDate, '-');
+    this.maxDateGregorianArray = this.convertToGregorian(this.maxDateArray[0], this.maxDateArray[1], this.maxDateArray[2]);
+
     this.monthList = monthList;
     this.monthsDaysCount = monthsDaysCount;
   }
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
-    this._log('update');
+    this._log('update: %s', this.initDate);
+
+    if (changedProperties.has('minDate')) {
+      this.minDateArray = convertStringToNumberArray(this.minDate as string, '-');
+      this.minDateGregorianArray = this.convertToGregorian(this.minDateArray[0], this.minDateArray[1], this.minDateArray[2]);
+    }
+
+    if (changedProperties.has('maxDate')) {
+      this.maxDateArray = convertStringToNumberArray(this.maxDate as string, '-');
+      this.maxDateGregorianArray = this.convertToGregorian(this.maxDateArray[0], this.maxDateArray[1], this.maxDateArray[2]);
+    }
 
     // Prevent re-rendering when shortWeekLabel is changed
     if (changedProperties.has('shortWeekLabel') && !this.shortWeekLabel) {
@@ -46,7 +73,17 @@ export class PersianCalendarElement extends CalendarBaseElement {
 
     // Create array of initDate when it's changed
     if (changedProperties.has('initDate')) {
-      const initDateArray = convertStringToNumberArray(this.initDate, '-');
+      const initDateArray = convertStringToNumberArray(this.initDate as string, '-');
+      if (new Date(`${initDateArray[0]}-${initDateArray[1]}-${initDateArray[2]}`).getTime() > new Date(`${this.maxDateGregorianArray[0]}-${this.maxDateGregorianArray[1]}-${this.maxDateGregorianArray[2]}`).getTime()) {
+        this.initDate = this.maxDate as string;
+      }
+
+      if (new Date(`${initDateArray[0]}-${initDateArray[1]}-${initDateArray[2]}`).getTime() < new Date(`${this.minDateGregorianArray[0]}-${this.minDateGregorianArray[1]}-${this.minDateGregorianArray[2]}`).getTime()) {
+        this.initDate = this.minDate as string;
+      }
+
+      this.onScreenDate = this.initDate;
+
       this.calendarInitDate = initDateArray;
       // We need a cloned array here
       this.calendarOnScreenDate = initDateArray.slice(0);
@@ -64,7 +101,7 @@ export class PersianCalendarElement extends CalendarBaseElement {
     return html`
       <!-- Remove::start -->
       <!-- this div is here just to prove MHF something :D -->
-      <!-- <div @click="${this.changeDate}">Change Screen Date</div> -->
+      <!-- <div @click="">Change Screen Date</div> -->
       <!-- Remove::end -->
       <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
       ${this.calendarWeekList.map((week: number[], index: number) => {
@@ -131,7 +168,7 @@ export class PersianCalendarElement extends CalendarBaseElement {
   };
 
   protected calculateIfTodayExist(): boolean {
-    this._log('calculateIfTodayExist: calendarInitDate: %o & calendarOnScreenDate: %o', this.calendarInitDate, this.calendarOnScreenDate);
+    this._log('calculateIfTodayExist');
 
     return (this.calendarInitDate[0] === this.calendarOnScreenDate[0] &&
       this.calendarInitDate[1] === this.calendarOnScreenDate[1]);
@@ -139,6 +176,7 @@ export class PersianCalendarElement extends CalendarBaseElement {
 
   protected calculateSelectedDayList() {
     this._log('calculateSelectedDayList');
+
     let days: Array<number> = [];
     let [onScreenYear, onScreenMonth]: Array<number> = this.calendarOnScreenDate;
 
@@ -260,24 +298,19 @@ export class PersianCalendarElement extends CalendarBaseElement {
 
   protected leapYearCalculation(year: number): number {
     this._log('Persian-calendar: leapYearCalculation');
-
-    let leapResult = [1, 5, 9, 13, 17, 22, 26, 30];
-    return leapResult.indexOf(year % 33) > -1 ? 1 : 0;
+    return [1, 5, 9, 13, 17, 22, 26, 30].indexOf(year % 33) > -1 ? 1 : 0;
   }
-
-  // Remove::start
-  // this div is here just to prove MHF something :D
-  changeDate() {
-    this._log('changeDate');
-    this.initDate = '1399-3-27';
-  };
-  // Remove::end
 
   renderPrevMonth() {
     this._log('renderPrevMonth');
 
     if (this.calendarOnScreenDate[1] - 1 === 0) {
-      this.calendarOnScreenDate = [this.calendarOnScreenDate[0] - 1, 12, 1];
+      if (this.calendarOnScreenDate[0] - 1 > this.minDateArray[0]) {
+        this.calendarOnScreenDate = [this.calendarOnScreenDate[0] - 1, 12, 1];
+      }
+      else {
+        this.calendarOnScreenDate = this.minDateArray;
+      }
     }
     else {
       --this.calendarOnScreenDate[1];
@@ -291,7 +324,12 @@ export class PersianCalendarElement extends CalendarBaseElement {
     this._log('renderNextMonth');
 
     if (this.calendarOnScreenDate[1] + 1 > 12) {
-      this.calendarOnScreenDate = [this.calendarOnScreenDate[0] + 1, 1, 1];
+      if (this.calendarOnScreenDate[0] + 1 < this.maxDateArray[0]) {
+        this.calendarOnScreenDate = [this.calendarOnScreenDate[0] + 1, 1, 1];
+      }
+      else {
+        this.calendarOnScreenDate = this.maxDateArray;
+      }
     }
     else {
       ++this.calendarOnScreenDate[1];
