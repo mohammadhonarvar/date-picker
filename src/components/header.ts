@@ -67,7 +67,7 @@ export class HeaderElement extends BaseElement {
       <div class="previous" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('prev-month', undefined); }}">
         ${arrowBackward}
       </div>
-      <p @click=${() => { console.log('Go to next view') }}>${this.title}</p>
+      <p @click=${() => { this._fire('show-month-list', undefined) }}>${this.title}</p>
       <div class="next" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('next-month', undefined); }}">
         ${arrowForward}
       </div>

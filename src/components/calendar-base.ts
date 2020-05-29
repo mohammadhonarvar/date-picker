@@ -19,6 +19,9 @@ export default abstract class CalendarBaseElement extends BaseElement {
   @property({ type: String, attribute: 'max-date' })
   protected maxDate: string | undefined;
 
+  @property({ type: String })
+  activeView: string = 'calendar';
+
   @property({ type: Array })
   selectedDateList: number[][] = [];
 

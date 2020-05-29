@@ -1,7 +1,11 @@
-import { html, customElement, TemplateResult, property, query } from 'lit-element';
+import { html, customElement, TemplateResult, property, query, css } from 'lit-element';
 
 import CalendarBaseElement from './calendar-base';
 import { calendarBaseStyle } from '../base-style';
+import './month-list';
+import { HeaderElement } from './header';
+import './header';
+
 import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
 import './week-labels';
 
@@ -22,6 +26,9 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   @query('week-labels')
   weekLabelsElement!: HTMLElement;
 
+  @query('header-element')
+  headerElement: HeaderElement | undefined
+
   protected calendarInitDate: number[] = [];
   protected calendarOnScreenDate: number[] = [];
   protected selectedDayList: number[] = [];
@@ -29,21 +36,37 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   protected leapMonthIndex: number = 1;
   protected weekDayList = weekDayList;
 
-  static styles = calendarBaseStyle;
+  private headerElementTitle: string = '';
+
+  static styles = [calendarBaseStyle, css`
+    .view {
+      width: 100%;
+      transition: ease-out 0.25s;
+      position: relative;
+    }
+
+    [hidden] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translate3d(-25px, 0, 0);
+    }
+  `];
 
   constructor() {
     super();
 
     this.minDate = '1900-1-1';
     this.maxDate = '2200-1-1';
-    // Get date with 'yyyy-mm-dd' format by some tricks!!!
-    this.initDate = new Date().toISOString().split('T')[0];
 
     this.minDateArray = convertStringToNumberArray(this.minDate, '-');
     this.maxDateArray = convertStringToNumberArray(this.maxDate, '-');
 
     this.monthList = monthList;
     this.monthsDaysCount = monthsDaysCount;
+    this.weekDayList = weekDayList;
   }
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
@@ -86,31 +109,55 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
 
     return html`
-      <!-- Remove::start -->
-      <!-- this div is here just to prove MHF something :D -->
-      <!-- <div @click="">Change Screen Date</div> -->
-      <!-- Remove::end -->
-      <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
-      ${this.calendarWeekList.map((week: number[], index: number) => {
-        return html`
-            <div class="calendar-row">
-              ${week.map((day: number) => {
-                return this.getWeekDaysTemplate(day, index, today);
-              })}
-            </div>
-          `
-        })
+      ${['calendar', 'monthList'].includes(this.activeView)
+        ?
+        html`
+          <header-element
+            title="March 2020"
+            @prev-month="${this.renderPrevMonth}"
+            @next-month="${this.renderNextMonth}"
+            @show-month-list="${() => { this.activeView = 'monthList' }}"
+            debug
+          >
+          </header-element>`
+        : ''
       }
+      <div class="view" ?hidden="${this.activeView !== 'calendar'}">
+        <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
+        ${this.calendarWeekList.map((week: number[], index: number) => {
+          return html`
+              <div class="calendar-row">
+                ${week.map((day: number) => {
+                  return this.getWeekDaysTemplate(day, index, today);
+                })}
+              </div>
+            `
+          })
+        }
+      </div>
+      <month-list
+        class="view"
+        ?hidden="${this.activeView !== 'monthList'}"
+        .monthList="${this.monthList}"
+        @month-changed-to="${this.onMonthChangedTo}"
+      >
+      </month-list>
     `;
   }
 
   protected updated() {
     this._log('updated');
 
+    if (this.headerElementTitle && this.headerElement) {
+      this.headerElement.title = this.headerElementTitle;
+      this._fire('current-month-changed', this.calendarOnScreenDate[1], true);
+    }
+
     if (this.weekLabelsElement && this.shortWeekLabel) {
       this.weekLabelsElement.setAttribute('short-name', '');
     }
   }
+
 
   protected getWeekDaysTemplate(day: number, index: number, today: number): TemplateResult {
     // this._log('getCalendarWeekTemplate');
@@ -205,8 +252,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       week.push(day);
     }
 
-    const headerTitle = `${this.monthList[this.calendarOnScreenDate[1] - 1]?.name} ${this.calendarOnScreenDate[0]}`;
-    this._fire('date-changed', headerTitle, true);
+    this.headerElementTitle = `${this.monthList[this.calendarOnScreenDate[1] - 1]?.name} ${this.calendarOnScreenDate[0]}`;
 
     return calendar;
   }
@@ -250,8 +296,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       --this.calendarOnScreenDate[1];
     }
 
-    this.calendarWeekList = this.calculateCalendar();
-    this.requestUpdate();
+    this.calculateCalendarWeekList();
   }
 
   renderNextMonth() {
@@ -269,7 +314,20 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       ++this.calendarOnScreenDate[1];
     }
 
+    this.calculateCalendarWeekList();
+  }
+
+  calculateCalendarWeekList() {
+    this._log('calculateCalendarWeekList');
     this.calendarWeekList = this.calculateCalendar();
     this.requestUpdate();
+  }
+
+  private onMonthChangedTo(event: CustomEvent) {
+    this._log('onMonthChangedTo');
+
+    this.calendarOnScreenDate[1] = event.detail;
+    this.activeView = 'calendar';
+    this.calculateCalendarWeekList();
   }
 }

@@ -75,12 +75,12 @@ export class WeekLabelList extends BaseElement {
 
   protected render(): TemplateResult {
     this._log('render');
-    
+
     return html`
-      ${(this.weekLabelList as WeekLabelInterface[]).map(({ shortName, name }: WeekLabelInterface) => {
+      ${(this.weekLabelList as WeekLabelInterface[]).map((week: WeekLabelInterface) => {
       return html`
           <div class="calendar-day">
-            <div class="calendar-day-data">${this.useShortName ? shortName : name}</div>
+            <div class="calendar-day-data">${this.useShortName ? week.shortName : week.name}</div>
           </div>
         `
     })
