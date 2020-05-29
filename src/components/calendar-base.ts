@@ -46,6 +46,9 @@ export default abstract class CalendarBaseElement extends BaseElement {
   @property({ type: Array })
   monthList: MonthInterface[] = [];
 
+  protected minDateArray: number[] = [];
+  protected maxDateArray: number[] = [];
+
   protected shouldUpdate(): boolean {
     if (
       !(

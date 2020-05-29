@@ -15,17 +15,17 @@ interface MonthInterface {
 }
 
 @customElement('gregorian-calendar-element')
-export default class GregorianCalendarElement extends CalendarBaseElement {
+export class GregorianCalendarElement extends CalendarBaseElement {
   @property({ type: Array })
   monthList: MonthInterface[] = monthList;
 
   @query('week-labels')
   weekLabelsElement!: HTMLElement;
 
-  protected calendarInitDate: number[] = convertStringToNumberArray(this.initDate, '-') as number[];
-  protected calendarOnScreenDate: number[] = convertStringToNumberArray(this.onScreenDate, '-') as number[];
-  protected selectedDayList = this.calculateSelectedDayList();
-  protected calendarWeekList = this.calculateCalendar();
+  protected calendarInitDate: number[] = [];
+  protected calendarOnScreenDate: number[] = [];
+  protected selectedDayList: number[] = [];
+  protected calendarWeekList: number[][] = [];
   protected leapMonthIndex: number = 1;
   protected weekDayList = weekDayList;
 
@@ -34,12 +34,16 @@ export default class GregorianCalendarElement extends CalendarBaseElement {
   constructor() {
     super();
 
-    this.monthsDaysCount = monthsDaysCount;
-  }
+    this.minDate = '1900-1-1';
+    this.maxDate = '2200-1-1';
+    // Get date with 'yyyy-mm-dd' format by some tricks!!!
+    this.initDate = new Date().toISOString().split('T')[0];
 
-  protected shouldUpdate(): boolean {
-    if ((this.initDate.split('-')).length !== 3) return false;
-    return true;
+    this.minDateArray = convertStringToNumberArray(this.minDate, '-');
+    this.maxDateArray = convertStringToNumberArray(this.maxDate, '-');
+
+    this.monthList = monthList;
+    this.monthsDaysCount = monthsDaysCount;
   }
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
@@ -55,8 +59,21 @@ export default class GregorianCalendarElement extends CalendarBaseElement {
 
     // Create array of initDate when it's changed
     if (changedProperties.has('initDate')) {
-      this.calendarInitDate = convertStringToNumberArray(this.initDate, '-');
-      this.calendarOnScreenDate = this.calendarInitDate;
+      if (new Date(this.initDate as string).getTime() > new Date(`${this.maxDateArray[0]}-${this.maxDateArray[1]}-${this.maxDateArray[2]}`).getTime()) {
+        this.initDate = this.maxDate as string;
+      }
+
+      if (new Date(this.initDate as string).getTime() < new Date(`${this.minDateArray[0]}-${this.minDateArray[1]}-${this.minDateArray[2]}`).getTime()) {
+        this.initDate = this.minDate as string;
+      }
+
+      this._log('update: %o', this.initDate);
+      this.onScreenDate = this.initDate;
+
+      const initDateArray = convertStringToNumberArray(this.initDate as string, '-');
+      this.calendarInitDate = initDateArray;
+      // We need a cloned array here
+      this.calendarOnScreenDate = initDateArray.slice(0);
       this.calendarWeekList = this.calculateCalendar();
     }
 
@@ -66,17 +83,19 @@ export default class GregorianCalendarElement extends CalendarBaseElement {
   protected render(): TemplateResult {
     this._log('render');
 
+    const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
+
     return html`
       <!-- Remove::start -->
       <!-- this div is here just to prove MHF something :D -->
-      <div @click="${this.changeDate}">Change Screen Date</div>
+      <!-- <div @click="">Change Screen Date</div> -->
       <!-- Remove::end -->
       <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
       ${this.calendarWeekList.map((week: number[], index: number) => {
         return html`
             <div class="calendar-row">
               ${week.map((day: number) => {
-                return this.getWeekDaysTemplate(day, index);
+                return this.getWeekDaysTemplate(day, index, today);
               })}
             </div>
           `
@@ -93,10 +112,9 @@ export default class GregorianCalendarElement extends CalendarBaseElement {
     }
   }
 
-  protected getWeekDaysTemplate(day: number, index: number): TemplateResult {
+  protected getWeekDaysTemplate(day: number, index: number, today: number): TemplateResult {
     // this._log('getCalendarWeekTemplate');
 
-    const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
     const notForThisMonth = ((index === 0 && day > 7) || (index > 2 && day < 15));
     const selected = this.selectedDayList.includes(day);
     // const edge = selected && props.selectedDate.length > 1;
@@ -137,10 +155,8 @@ export default class GregorianCalendarElement extends CalendarBaseElement {
     this._log('leapYearCalculation');
 
     let isLeap: number = 0;
-    if (year % 4 === 0) isLeap = 1;
-    if (year % 100 === 0) {
-      isLeap = 0;
-      if (year % 400 === 0) isLeap = 1;
+    if (((year % 4 === 0) && (year % 100 !== 0)) || (year % 400 === 0)) {
+      isLeap = 1;
     }
     return isLeap;
   };
@@ -148,19 +164,24 @@ export default class GregorianCalendarElement extends CalendarBaseElement {
   protected calculateCalendar(): number[][] {
     this._log('calculateCalendar');
 
-    let date = new Date(`${this.calendarOnScreenDate[0]}/${this.calendarOnScreenDate[1]}/1`);
-    const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] + (this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex ? this.leapYearCalculation(this.calendarOnScreenDate[0]) : 0);
+    let date = new Date(`${this.calendarOnScreenDate[0]}-${this.calendarOnScreenDate[1]}-1`);
+
+    const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] + (
+          this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex
+          ? this.leapYearCalculation(this.calendarOnScreenDate[0])
+          : 0
+        );
 
     let tempYear = this.calendarOnScreenDate[0];
-    let previousMonthIndex: number;
-    if (this.calendarOnScreenDate[1] - 2 === -1) {
+    let previousMonthIndex: number = this.calendarOnScreenDate[1] - 2;
+    if (previousMonthIndex <= 0) {
       tempYear--;
+      if (tempYear < this.minDateArray[0]) {
+        tempYear = this.minDateArray[0];
+      }
       previousMonthIndex = 11;
     }
-    else {
-      previousMonthIndex = this.calendarOnScreenDate[1] - 2;
-    }
-    const previousMonthDaysCount = this.monthsDaysCount[previousMonthIndex] + (this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex ? this.leapYearCalculation(tempYear) : 0);
+    const previousMonthDaysCount = this.monthsDaysCount[previousMonthIndex] + (previousMonthIndex === this.leapMonthIndex ? this.leapYearCalculation(tempYear) : 0);
 
     const startWeekAtIndex = date.getDay();
     this._log('startWeekAtIndex: %s', startWeekAtIndex);
@@ -182,9 +203,11 @@ export default class GregorianCalendarElement extends CalendarBaseElement {
         continue;
       }
       week.push(day);
-      // this._log('week: %o', week);
     }
-    // this._log('calendar: %o', calendar);
+
+    const headerTitle = `${this.monthList[this.calendarOnScreenDate[1] - 1]?.name} ${this.calendarOnScreenDate[0]}`;
+    this._fire('date-changed', headerTitle, true);
+
     return calendar;
   }
 
@@ -212,12 +235,41 @@ export default class GregorianCalendarElement extends CalendarBaseElement {
     return days;
   };
 
-  // Remove::start
-  // this div is here just to prove MHF something :D
-  changeDate() {
-    this.calendarOnScreenDate = [2020, 5, 2];
+  renderPrevMonth() {
+    this._log('renderPrevMonth');
+
+    if (this.calendarOnScreenDate[1] - 1 === 0) {
+      if (this.calendarOnScreenDate[0] - 1 > this.minDateArray[0]) {
+        this.calendarOnScreenDate = [this.calendarOnScreenDate[0] - 1, 12, 1];
+      }
+      else {
+        this.calendarOnScreenDate = this.minDateArray;
+      }
+    }
+    else {
+      --this.calendarOnScreenDate[1];
+    }
+
     this.calendarWeekList = this.calculateCalendar();
     this.requestUpdate();
-  };
-  // Remove::end
+  }
+
+  renderNextMonth() {
+    this._log('renderNextMonth');
+
+    if (this.calendarOnScreenDate[1] + 1 > 12) {
+      if (this.calendarOnScreenDate[0] + 1 < this.maxDateArray[0]) {
+        this.calendarOnScreenDate = [this.calendarOnScreenDate[0] + 1, 1, 1];
+      }
+      else {
+        this.calendarOnScreenDate = this.maxDateArray;
+      }
+    }
+    else {
+      ++this.calendarOnScreenDate[1];
+    }
+
+    this.calendarWeekList = this.calculateCalendar();
+    this.requestUpdate();
+  }
 }

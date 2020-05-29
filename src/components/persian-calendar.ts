@@ -26,9 +26,7 @@ export class PersianCalendarElement extends CalendarBaseElement {
   protected leapMonthIndex: number = 11;
   protected weekDayList = weekDayList;
 
-  private minDateArray: number[];
   private minDateGregorianArray: number[];
-  private maxDateArray: number[];
   private maxDateGregorianArray: number[];
 
   static styles = calendarBaseStyle;
@@ -203,8 +201,11 @@ export class PersianCalendarElement extends CalendarBaseElement {
 
     let tempYear = this.calendarOnScreenDate[0];
     let previousMonthIndex: number = this.calendarOnScreenDate[1] - 2;
-    if (previousMonthIndex < 0) {
+    if (previousMonthIndex <= 0) {
       tempYear--;
+      if (tempYear < this.minDateArray[0]) {
+        tempYear = this.minDateArray[0];
+      }
       previousMonthIndex = 11;
     }
     const previousMonthDaysCount = this.monthsDaysCount[previousMonthIndex] + (previousMonthIndex === this.leapMonthIndex ? this.leapYearCalculation(tempYear) : 0);
