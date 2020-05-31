@@ -1,7 +1,6 @@
 import { html, customElement, TemplateResult, property, css } from 'lit-element';
 
 import { BaseElement } from '../base-element';
-import { calendarBaseStyle } from '../base-style';
 
 interface MonthLabelInterface {
   name: string;
@@ -16,12 +15,34 @@ export class MonthList extends BaseElement {
   @property({ type: Number, attribute: 'active-month' })
   activeMonthNumber: number = 1;
 
-  static styles = [calendarBaseStyle, css`
+  static styles = css`
+
+    :host {
+      display: flex;
+      flex-flow: row wrap;
+    }
+
+    .month-button {
+      width: calc(33.33333% - 40px);
+      text-align: center;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-weight: 500;
+      margin: 4px;
+      color: rgba(0, 0, 0, 0.60);
+      cursor: pointer;
+    }
+
+    .month-button:hover {
+      background-color: #A0144F23;
+      color: rgba(0, 0, 0, 0.60);
+    }
+
     [active] {
       background-color: #A0144F;
       color: rgba(255, 255, 255, 0.87);
     }
-  `];
+  `;
 
   disconnectedCallback() {
     document.removeEventListener('current-month-changed', this.onCurrentMonthChanged.bind(this));
@@ -43,7 +64,7 @@ export class MonthList extends BaseElement {
 
     return html`
       ${(this.monthList as MonthLabelInterface[]).map((month: MonthLabelInterface, index: number) => {
-        return html`
+      return html`
           <div
             class="month-button"
             ?active="${this.activeMonthNumber === index + 1}"
@@ -52,8 +73,8 @@ export class MonthList extends BaseElement {
             <div>${month.shortName ? month.shortName : month.name}</div>
           </div>
         `
-      })
-    }`;
+    })
+      }`;
   }
 
   private onCurrentMonthChanged(event: Event | CustomEvent) {
