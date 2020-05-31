@@ -36,22 +36,7 @@ export class PersianCalendarElement extends CalendarBaseElement {
   private maxDateGregorianArray: number[];
   private headerElementTitle: string = '';
 
-  static styles = [calendarBaseStyle, css`
-    .view {
-      width: 100%;
-      transition: ease-out 0.25s;
-      position: relative;
-    }
-
-    [hidden] {
-      position: absolute;
-      top: 0;
-      left: 0;
-      opacity: 0;
-      visibility: hidden;
-      transform: translate3d(-25px, 0, 0);
-    }
-  `];
+  static styles = [calendarBaseStyle, css``];
 
   constructor() {
     super();
@@ -131,27 +116,29 @@ export class PersianCalendarElement extends CalendarBaseElement {
           </header-element>`
         : ''
       }
-      <div class="view" ?hidden="${this.activeView !== 'calendar'}">
-        <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
-        ${this.calendarWeekList.map((week: number[], index: number) => {
-          return html`
-              <div class="calendar-row">
-                ${week.map((day: number) => {
-                  return this.getWeekDaysTemplate(day, index, today);
-                })}
-              </div>
-            `
-          })
-        }
+      <div class="views-container">
+        <div class="view" ?hidden="${this.activeView !== 'calendar'}">
+          <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
+          ${this.calendarWeekList.map((week: number[], index: number) => {
+        return html`
+                <div class="calendar-row">
+                  ${week.map((day: number) => {
+          return this.getWeekDaysTemplate(day, index, today);
+        })}
+                </div>
+              `
+      })
+      }
+        </div>
+        <month-list
+          class="view"
+          ?hidden="${this.activeView !== 'monthList'}"
+          .monthList="${this.monthList}"
+          @month-changed-to="${this.onMonthChangedTo}"
+          debug
+        >
+        </month-list>
       </div>
-      <month-list
-        class="view"
-        ?hidden="${this.activeView !== 'monthList'}"
-        .monthList="${this.monthList}"
-        @month-changed-to="${this.onMonthChangedTo}"
-        debug
-      >
-      </month-list>
     `;
   }
 
@@ -239,10 +226,10 @@ export class PersianCalendarElement extends CalendarBaseElement {
     let date = new Date(newDate[0], newDate[1] - 1, newDate[2]);
 
     const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] + (
-          this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex
-          ? this.leapYearCalculation(this.calendarOnScreenDate[0])
-          : 0
-        );
+      this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex
+        ? this.leapYearCalculation(this.calendarOnScreenDate[0])
+        : 0
+    );
 
     let tempYear = this.calendarOnScreenDate[0];
     let previousMonthIndex: number = this.calendarOnScreenDate[1] - 2;
