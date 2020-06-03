@@ -21,8 +21,8 @@ export class DedcadeList extends BaseElement {
       flex-flow: row wrap;
     }
 
-    .year-button {
-      width: calc(33.33333% - 40px);
+    .decade-button {
+      width: calc(100% - 40px);
       text-align: center;
       border-radius: 6px;
       padding: 10px 16px;
@@ -32,7 +32,7 @@ export class DedcadeList extends BaseElement {
       cursor: pointer;
     }
 
-    .year-button:hover {
+    .decade-button:hover {
       background-color: #A0144F23;
       color: rgba(0, 0, 0, 0.60);
     }
@@ -56,11 +56,11 @@ export class DedcadeList extends BaseElement {
   protected shouldUpdate(): boolean {
     this._log('shouldUpdate');
     if (
-        !(
-          this.currentYear &&
-          this.minYear &&
-          this.maxYear
-        )
+      !(
+        this.currentYear &&
+        this.minYear &&
+        this.maxYear
+      )
     ) {
       return false;
     }
@@ -72,7 +72,7 @@ export class DedcadeList extends BaseElement {
     this._log('update');
 
     if (changedProperties.has('minYear') || changedProperties.has('maxYear')) {
-      this.createDedcadeList(this.minYear as number, this.maxYear as number);
+      this.createDedcadeList(this.minYear as number, this.maxYear as number, this.currentYear as number);
     }
 
     super.update(changedProperties);
@@ -82,21 +82,21 @@ export class DedcadeList extends BaseElement {
     this._log('render');
 
     const year = this.currentYear as number;
-    const dedcadeStart = year - year % 10;
+    const decadeStart = year - year % 10;
 
     return html`
       ${(this.dedcadeList as number[][]).map(dedcade => {
-        return html`
+      return html`
           <div
-            class="year-button"
-            ?active="${dedcade[0] === dedcadeStart}"
+            class="decade-button"
+            ?active="${dedcade[0] === decadeStart}"
             @click="${() => { this._fire('dedcade-changed-to', dedcade); }}"
           >
             <div>${dedcade[0]}-${dedcade[1]}</div>
           </div>
         `
-      })
-    }`;
+    })
+      }`;
   }
 
   private onCurrentYearChanged(event: Event | CustomEvent) {
@@ -108,21 +108,35 @@ export class DedcadeList extends BaseElement {
     this.currentYear = _event.detail;
   }
 
-  private createDedcadeList(minYear: number, maxYear: number) {
+  private createDedcadeList(minYear: number, maxYear: number, currentYear: number) {
     this._log('createDedcadeList');
 
-    this.dedcadeList.push([minYear, minYear + 9]);
+    let decadeStartYear = currentYear - currentYear % 10;
 
-    const dedcadeCount = (maxYear - minYear) / 10;
-    for (let i = 1; i < dedcadeCount - 1; i++) {
-      const startCurrentDedcade = this.dedcadeList[i - 1][1] + 1;
-      const dedcade = [
-        startCurrentDedcade,
-        startCurrentDedcade + 9
-      ];
-      this.dedcadeList.push(dedcade);
+    let decadeList: number[][] = [];
+
+    for (let i = 0; i < 3; ++i) {
+      let exceedMinYear: Boolean = decadeStartYear < minYear;
+      let exceedMaxYear: Boolean = decadeStartYear + 9 > maxYear;
+      decadeList.push([exceedMinYear ? minYear : decadeStartYear, exceedMaxYear ? maxYear : decadeStartYear + 9]);
+      decadeStartYear += 10;
     }
 
-    this.dedcadeList[this.dedcadeList.length - 1][1] = maxYear;
+    this.dedcadeList = decadeList;
+
+
+    // this.dedcadeList.push([minYear, minYear + 9]);
+
+    // const dedcadeCount = (maxYear - minYear) / 10;
+    // for (let i = 1; i < dedcadeCount - 1; i++) {
+    //   const startCurrentDedcade = this.dedcadeList[i - 1][1] + 1;
+    //   const dedcade = [
+    //     startCurrentDedcade,
+    //     startCurrentDedcade + 9
+    //   ];
+    //   this.dedcadeList.push(dedcade);
+    // }
+
+    // this.dedcadeList[this.dedcadeList.length - 1][1] = maxYear;
   }
 }
