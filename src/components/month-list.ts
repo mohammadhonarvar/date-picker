@@ -64,17 +64,20 @@ export class MonthList extends BaseElement {
 
     return html`
       ${(this.monthList as MonthLabelInterface[]).map((month: MonthLabelInterface, index: number) => {
-      return html`
+        return html`
           <div
             class="month-button"
             ?active="${this.activeMonthNumber === index + 1}"
-            @click="${() => { this._fire('month-changed-to', index + 1) }}"
+            @click="${() => {
+              this.activeMonthNumber = index + 1;
+              this._fire('month-changed-to', index + 1);
+            }}"
           >
             <div>${month.shortName ? month.shortName : month.name}</div>
           </div>
         `
-    })
-      }`;
+      })
+    }`;
   }
 
   private onCurrentMonthChanged(event: Event | CustomEvent) {

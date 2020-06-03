@@ -3,6 +3,10 @@ import { html, customElement, TemplateResult, property, query, css } from 'lit-e
 import CalendarBaseElement from './calendar-base';
 import { calendarBaseStyle } from '../base-style';
 import './month-list';
+import { YearList } from './year-list';
+import './year-list';
+import { DedcadeList } from './dedcade-list';
+import './dedcade-list';
 import { HeaderElement } from './header';
 import './header';
 
@@ -27,7 +31,13 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   weekLabelsElement!: HTMLElement;
 
   @query('header-element')
-  headerElement: HeaderElement | undefined
+  headerElement: HeaderElement | undefined;
+
+  @query('year-list')
+  yearListElement: YearList | undefined;
+
+  @query('dedcade-list')
+  dedcadeListElement: DedcadeList | undefined;
 
   protected calendarInitDate: number[] = [];
   protected calendarOnScreenDate: number[] = [];
@@ -35,8 +45,6 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   protected calendarWeekList: number[][] = [];
   protected leapMonthIndex: number = 1;
   protected weekDayList = weekDayList;
-
-  private headerElementTitle: string = '';
 
   static styles = [calendarBaseStyle, css``];
 
@@ -94,50 +102,76 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
 
     return html`
-      ${['calendar', 'monthList'].includes(this.activeView)
+      ${['calendar', 'monthList', 'yearList', 'dedcade'].includes(this.activeView)
         ?
         html`
           <header-element
-            title="March 2020"
             @prev-month="${this.renderPrevMonth}"
             @next-month="${this.renderNextMonth}"
             @show-month-list="${() => { this.activeView = 'monthList' }}"
+            @show-year-list="${() => { this.activeView = 'yearList' }}"
+            @show-dedcade-list="${() => { this.activeView = 'dedcadeList' }}"
             debug
           >
           </header-element>`
         : ''
       }
       <div class="views-container">
-        <div class="view calendar-view" ?hidden="${this.activeView !== 'calendar'}">
+        <div class="view" ?hidden="${this.activeView !== 'calendar'}">
           <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
           ${this.calendarWeekList.map((week: number[], index: number) => {
-        return html`
-                <div class="calendar-row">
-                  ${week.map((day: number) => {
-          return this.getWeekDaysTemplate(day, index, today);
-        })}
-                </div>
+            return html`
+              <div class="calendar-row">
+                ${week.map((day: number) => {
+                  return this.getWeekDaysTemplate(day, index, today);
+                })}
+              </div>
               `
-      })
-      }
+            })
+          }
         </div>
         <month-list
           class="view"
           ?hidden="${this.activeView !== 'monthList'}"
           .monthList="${this.monthList}"
           @month-changed-to="${this.onMonthChangedTo}"
+          debug
         >
         </month-list>
+        <year-list
+          class="view"
+          ?hidden="${this.activeView !== 'yearList'}"
+          .currentYear="${this.calendarOnScreenDate[0]}"
+          @year-changed-to="${this.onYearChangedTo}"
+          debug
+        >
+        </year-list>
+        <dedcade-list
+          class="view"
+          ?hidden="${this.activeView !== 'dedcadeList'}"
+          .currentYear="${this.calendarOnScreenDate[0]}"
+          .minYear="${this.minDateArray[0]}"
+          .maxYear="${this.maxDateArray[0]}"
+          @dedcade-changed-to="${this.onDedcadeChangedTo}"
+          debug
+        >
+        </year-list>
       </div>
     `;
   }
 
-  protected updated() {
+  protected firstUpdated(changedProperties: Map<string | number | symbol, unknown>) {
+    super.firstUpdated(changedProperties);
+    this._log('firstUpdated');
+
+    this._fire('current-month-changed', this.calendarOnScreenDate[1], true);
+  }
+
+  protected updated(changedProperties: Map<string | number | symbol, unknown>) {
     this._log('updated');
 
-    if (this.headerElementTitle && this.headerElement) {
-      this.headerElement.title = this.headerElementTitle;
-      this._fire('current-month-changed', this.calendarOnScreenDate[1], true);
+    if (changedProperties.has('activeView')) {
+      this.handleHeaderTitle();
     }
 
     if (this.weekLabelsElement && this.shortWeekLabel) {
@@ -239,8 +273,6 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       week.push(day);
     }
 
-    this.headerElementTitle = `${this.monthList[this.calendarOnScreenDate[1] - 1]?.name} ${this.calendarOnScreenDate[0]}`;
-
     return calendar;
   }
 
@@ -284,6 +316,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     }
 
     this.calculateCalendarWeekList();
+    this.handleHeaderTitle();
   }
 
   renderNextMonth() {
@@ -302,11 +335,15 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     }
 
     this.calculateCalendarWeekList();
+    this.handleHeaderTitle();
   }
 
   calculateCalendarWeekList() {
     this._log('calculateCalendarWeekList');
+
     this.calendarWeekList = this.calculateCalendar();
+    this._fire('current-month-changed', this.calendarOnScreenDate[1], true);
+    this._fire('current-year-changed', this.calendarOnScreenDate[0], true);
     this.requestUpdate();
   }
 
@@ -314,7 +351,56 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     this._log('onMonthChangedTo');
 
     this.calendarOnScreenDate[1] = event.detail;
-    this.activeView = 'calendar';
     this.calculateCalendarWeekList();
+    this.activeView = 'calendar';
+  }
+
+  private onYearChangedTo(event: CustomEvent) {
+    this._log('onYearChangedTo');
+
+    this.calendarOnScreenDate[0] = event.detail;
+    this.activeView = 'monthList';
+    this.calculateCalendarWeekList();
+  }
+
+  private onDedcadeChangedTo(event: CustomEvent) {
+    this._log('onDedcadeChangedTo');
+
+    this.calendarOnScreenDate[0] = event.detail[0] as number;
+    if (this.yearListElement) {
+      this.yearListElement.currentYear = event.detail[0] as number;
+    }
+    requestAnimationFrame(() => {
+      this.activeView = 'yearList';
+    });
+    this.calculateCalendarWeekList();
+  }
+
+  private handleHeaderTitle() {
+    this._log('handleHeaderTitle');
+
+    if (!this.headerElement) return;
+
+    switch (this.activeView) {
+      case 'calendar':
+        this.headerElement.calendarActiveView = this.activeView;
+        this.headerElement.title = `${this.monthList[this.calendarOnScreenDate[1] - 1]?.name} ${this.calendarOnScreenDate[0]}`;
+        break;
+
+      case 'monthList':
+        this.headerElement.calendarActiveView = this.activeView;
+        this.headerElement.title = this.calendarOnScreenDate[0] + '';
+        break;
+
+      case 'yearList':
+        const dedcadeStart = this.calendarOnScreenDate[0] - this.calendarOnScreenDate[0] % 10;
+        this.headerElement.calendarActiveView = this.activeView;
+        this.headerElement.title = `${dedcadeStart}-${dedcadeStart + 9}`;
+        break;
+
+      default:
+        this._warn('Invalid view');
+        break;
+    }
   }
 }

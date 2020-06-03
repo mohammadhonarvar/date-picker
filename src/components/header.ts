@@ -5,22 +5,13 @@ import { arrowBackward, arrowForward } from '../utils/icon';
 
 @customElement('header-element')
 export class HeaderElement extends BaseElement {
-
   @property({ type: String })
   title: string = '';
 
   @property({ type: Boolean, attribute: 'disable' })
   disableNavigation: boolean = false;
 
-  disconnectedCallback() {
-    document.removeEventListener('date-changed', this.onDateChanged.bind(this));
-    super.disconnectedCallback();
-  }
-
-  constructor() {
-    super();
-    document.addEventListener('date-changed', this.onDateChanged.bind(this));
-  }
+  calendarActiveView: string = 'calendar';
 
   // FIX THEME & CSS VARs
   static styles = css`
@@ -60,6 +51,16 @@ export class HeaderElement extends BaseElement {
     }
   `;
 
+  disconnectedCallback() {
+    document.removeEventListener('date-changed', this.onDateChanged.bind(this));
+    super.disconnectedCallback();
+  }
+
+  constructor() {
+    super();
+    document.addEventListener('date-changed', this.onDateChanged.bind(this));
+  }
+
   protected render(): TemplateResult {
     this._log('render');
 
@@ -67,7 +68,7 @@ export class HeaderElement extends BaseElement {
       <div class="previous" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('prev-month', undefined); }}">
         ${arrowBackward}
       </div>
-      <p @click=${() => { this._fire('show-month-list', undefined) }}>${this.title}</p>
+      <p @click=${this.onTitleClick}>${this.title}</p>
       <div class="next" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('next-month', undefined); }}">
         ${arrowForward}
       </div>
@@ -81,5 +82,32 @@ export class HeaderElement extends BaseElement {
     if (!event['detail']) return;
     const _event = event as CustomEvent;
     this.title = _event.detail;
+  }
+
+  private onTitleClick() {
+    this._log('onTitleClick');
+
+    switch (this.calendarActiveView) {
+      case 'calendar':
+        this._fire('show-month-list', undefined);
+        break;
+
+      case 'monthList':
+        this._fire('show-year-list', undefined);
+        break;
+
+      case 'yearList':
+        this._fire('show-dedcade-list', undefined);
+        break;
+
+      case 'dedcadeList':
+        this._fire('show-year-list', undefined);
+        break;
+
+      default:
+        this._warn('Invalid view');
+        break;
+    }
+
   }
 }
