@@ -1,7 +1,7 @@
 import { html, css, customElement, TemplateResult, property } from 'lit-element';
 
 import { BaseElement } from './base-element';
-import './components/persian-calendar';
+import './components/solar-calendar';
 import './components/gregorian-calendar';
 
 import { fixPersianNumber } from './utils/fix-persian-number';
@@ -12,7 +12,7 @@ export class DatePicker extends BaseElement {
   justTimePicker: boolean = false;
 
   @property({ type: Boolean })
-  jalali: boolean = false;
+  solar: boolean = false;
 
   @property({ type: Array })
   selectedTime: number[] = [];
@@ -23,8 +23,8 @@ export class DatePicker extends BaseElement {
   selectedDate: number[] = [];
 
   // required: initialDate
-  @property({ type: String })
-  initialDate: string = this.jalali ?
+  @property({ type: String, attribute: 'date' })
+  initialDate: string = this.solar ?
     fixPersianNumber(new Date().toLocaleDateString('fa').replace(/\//g, '-')) :
     new Date().toLocaleDateString('en-CA');
 
@@ -50,8 +50,8 @@ export class DatePicker extends BaseElement {
     const x = new Date(date.getTime() + (offset*60*1000))
     this._log('update: %s', x.toISOString().split('T')[0]);
 
-    if (changedProperties.has('jalali')) {
-      if (this.jalali) {
+    if (changedProperties.has('solar')) {
+      if (this.solar) {
         this.initialDate = fixPersianNumber(new Date().toLocaleDateString('fa').replace(/\//g, '-'));
       }
       else {
@@ -65,13 +65,13 @@ export class DatePicker extends BaseElement {
   protected render(): TemplateResult {
     this._log('render');
     return html`
-      ${this.jalali
+      ${this.solar
         ? html`
-          <persian-calendar-element
+          <solar-calendar-element
             debug
             date="${this.initialDate}"
           >
-          </persian-calendar-element>`
+          </solar-calendar-element>`
         : html`
           <gregorian-calendar-element
             debug
