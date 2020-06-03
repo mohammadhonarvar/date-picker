@@ -17,8 +17,8 @@ import { convertStringToNumberArray } from '../utils/convert-string-to-number-ar
 // This class is based on gregorian, then we can use the following:
 import { weekDayList, monthsDaysCount, monthList } from '../data/jalali';
 
-@customElement('persian-calendar-element')
-export class PersianCalendarElement extends CalendarBaseElement {
+@customElement('solar-calendar-element')
+export class SolarCalendarElement extends CalendarBaseElement {
   @query('week-labels')
   weekLabelsElement!: HTMLElement;
 
@@ -56,7 +56,7 @@ export class PersianCalendarElement extends CalendarBaseElement {
   }
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
-    this._log('update: %s', this.initDate);
+    this._log('update');
 
     if (changedProperties.has('minDate')) {
       this.minDateArray = convertStringToNumberArray(this.minDate as string, '-');
@@ -79,16 +79,16 @@ export class PersianCalendarElement extends CalendarBaseElement {
     // Create array of initDate when it's changed
     if (changedProperties.has('initDate')) {
       const initDateArray = convertStringToNumberArray(this.initDate as string, '-');
-      if (new Date(`${initDateArray[0]}-${initDateArray[1]}-${initDateArray[2]}`).getTime() > new Date(`${this.maxDateGregorianArray[0]}-${this.maxDateGregorianArray[1]}-${this.maxDateGregorianArray[2]}`).getTime()) {
+      const initDateGregorianArray = this.convertToGregorian(initDateArray[0], initDateArray[1], initDateArray[2]);
+      if (new Date(`${initDateGregorianArray[0]}-${initDateGregorianArray[1]}-${initDateGregorianArray[2]}`).getTime() > new Date(`${this.maxDateGregorianArray[0]}-${this.maxDateGregorianArray[1]}-${this.maxDateGregorianArray[2]}`).getTime()) {
         this.initDate = this.maxDate as string;
       }
 
-      if (new Date(`${initDateArray[0]}-${initDateArray[1]}-${initDateArray[2]}`).getTime() < new Date(`${this.minDateGregorianArray[0]}-${this.minDateGregorianArray[1]}-${this.minDateGregorianArray[2]}`).getTime()) {
+      if (new Date(`${initDateGregorianArray[0]}-${initDateGregorianArray[1]}-${initDateGregorianArray[2]}`).getTime() < new Date(`${this.minDateGregorianArray[0]}-${this.minDateGregorianArray[1]}-${this.minDateGregorianArray[2]}`).getTime()) {
         this.initDate = this.minDate as string;
       }
 
       this.onScreenDate = this.initDate;
-
       this.calendarInitDate = initDateArray;
       // We need a cloned array here
       this.calendarOnScreenDate = initDateArray.slice(0);
