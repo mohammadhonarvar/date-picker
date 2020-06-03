@@ -120,15 +120,15 @@ export class GregorianCalendarElement extends CalendarBaseElement {
         <div class="view" ?hidden="${this.activeView !== 'calendar'}">
           <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
           ${this.calendarWeekList.map((week: number[], index: number) => {
-            return html`
+        return html`
               <div class="calendar-row">
                 ${week.map((day: number) => {
-                  return this.getWeekDaysTemplate(day, index, today);
-                })}
+          return this.getWeekDaysTemplate(day, index, today);
+        })}
               </div>
               `
-            })
-          }
+      })
+      }
         </div>
         <month-list
           class="view"
@@ -155,7 +155,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
           @dedcade-changed-to="${this.onDedcadeChangedTo}"
           debug
         >
-        </year-list>
+        </dedcade-list>
       </div>
     `;
   }
