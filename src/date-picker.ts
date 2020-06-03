@@ -28,7 +28,7 @@ export class DatePicker extends BaseElement {
     fixPersianNumber(new Date().toLocaleDateString('fa').replace(/\//g, '-')) :
     new Date().toLocaleDateString('en-CA');
 
-  @property({ type: Array, attribute: false})
+  @property({ type: Array, attribute: false })
   onScreenDate = this.initialDate;
 
   static styles = css`
@@ -40,14 +40,14 @@ export class DatePicker extends BaseElement {
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       user-select: none;
       overflow: hidden;
-      padding: 0 8px 16px;
+      /* padding: 0 8px 16px; */
     }
   `;
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
     const date = new Date();
     const offset = date.getTimezoneOffset()
-    const x = new Date(date.getTime() + (offset*60*1000))
+    const x = new Date(date.getTime() + (offset * 60 * 1000))
     this._log('update: %s', x.toISOString().split('T')[0]);
 
     if (changedProperties.has('solar')) {
