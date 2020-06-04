@@ -7,7 +7,7 @@ import { property } from 'lit-element';
 
 import { BaseElement } from '../base-element';
 
-import { MonthInterface } from '../data/jalali';
+import { MonthInterface } from '../data/solar';
 
 export default abstract class CalendarBaseElement extends BaseElement {
   @property({ type: String, attribute: 'date' })

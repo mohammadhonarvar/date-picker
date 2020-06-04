@@ -5,8 +5,8 @@ import { calendarBaseStyle } from '../base-style';
 import './month-list';
 import { YearList } from './year-list';
 import './year-list';
-import { DedcadeList } from './dedcade-list';
-import './dedcade-list';
+import { DecadeList } from './decade-list';
+import './decade-list';
 import { HeaderElement } from './header';
 import './header';
 
@@ -36,8 +36,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   @query('year-list')
   yearListElement: YearList | undefined;
 
-  @query('dedcade-list')
-  dedcadeListElement: DedcadeList | undefined;
+  @query('decade-list')
+  decadeListElement: DecadeList | undefined;
 
   protected calendarInitDate: number[] = [];
   protected calendarOnScreenDate: number[] = [];
@@ -102,15 +102,19 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
 
     return html`
-      ${['calendar', 'monthList', 'yearList', 'dedcade'].includes(this.activeView)
+      ${['calendar', 'monthList', 'yearList', 'decadeList'].includes(this.activeView)
         ?
         html`
           <header-element
             @prev-month="${this.renderPrevMonth}"
             @next-month="${this.renderNextMonth}"
+            @prev-year="${this.prevYear}"
+            @next-year="${this.nextYear}"
+            @prev-decade="${this.prevDecade}"
+            @next-decade="${this.nextDecade}"
             @show-month-list="${() => { this.activeView = 'monthList' }}"
             @show-year-list="${() => { this.activeView = 'yearList' }}"
-            @show-dedcade-list="${() => { this.activeView = 'dedcadeList' }}"
+            @show-decade-list="${() => { this.activeView = 'decadeList' }}"
             debug
           >
           </header-element>`
@@ -120,15 +124,15 @@ export class GregorianCalendarElement extends CalendarBaseElement {
         <div class="view" ?hidden="${this.activeView !== 'calendar'}">
           <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
           ${this.calendarWeekList.map((week: number[], index: number) => {
-        return html`
+            return html`
               <div class="calendar-row">
                 ${week.map((day: number) => {
-          return this.getWeekDaysTemplate(day, index, today);
-        })}
+                  return this.getWeekDaysTemplate(day, index, today);
+                })}
               </div>
               `
-      })
-      }
+            })
+          }
         </div>
         <month-list
           class="view"
@@ -142,20 +146,23 @@ export class GregorianCalendarElement extends CalendarBaseElement {
           class="view"
           ?hidden="${this.activeView !== 'yearList'}"
           .currentYear="${this.calendarOnScreenDate[0]}"
+          .minYear="${this.minDateArray[0]}"
+          .maxYear="${this.maxDateArray[0]}"
           @year-changed-to="${this.onYearChangedTo}"
           debug
         >
         </year-list>
-        <dedcade-list
+        <decade-list
           class="view"
-          ?hidden="${this.activeView !== 'dedcadeList'}"
+          ?hidden="${this.activeView !== 'decadeList'}"
           .currentYear="${this.calendarOnScreenDate[0]}"
           .minYear="${this.minDateArray[0]}"
           .maxYear="${this.maxDateArray[0]}"
-          @dedcade-changed-to="${this.onDedcadeChangedTo}"
+          @decade-changed-to="${this.onDedcadeChangedTo}"
+          @decade-changed="${this.decadeChanged}"
           debug
         >
-        </dedcade-list>
+        </year-list>
       </div>
     `;
   }
@@ -338,6 +345,47 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     this.handleHeaderTitle();
   }
 
+  prevYear() {
+    this._log('prevYear');
+    this.calendarOnScreenDate[0] = this.calendarOnScreenDate[0] - 1;
+    if (this.calendarOnScreenDate[0] <= this.minDateArray[0]) {
+      this.calendarOnScreenDate[0] = this.minDateArray[0];
+    }
+    this.calculateCalendarWeekList();
+  }
+
+  nextYear() {
+    this._log('nextYear');
+
+    this.calendarOnScreenDate[0] = this.calendarOnScreenDate[0] + 1;
+    if (this.calendarOnScreenDate[0] >= this.maxDateArray[0]) {
+      this.calendarOnScreenDate[0] = this.maxDateArray[0];
+    }
+    this.calculateCalendarWeekList();
+  }
+
+  prevDecade() {
+    this._log('prevDecade');
+
+    this.calendarOnScreenDate[0] = (this.calendarOnScreenDate[0] - this.calendarOnScreenDate[0] % 10) - 10;
+    if (this.calendarOnScreenDate[0] < this.minDateArray[0]) {
+      this.calendarOnScreenDate[0] = this.minDateArray[0];
+      return;
+    }
+    this.calculateCalendarWeekList();
+  }
+
+  nextDecade() {
+    this._log('nextDecade');
+
+    this.calendarOnScreenDate[0] = (this.calendarOnScreenDate[0] - this.calendarOnScreenDate[0] % 10) + 10;
+    if (this.calendarOnScreenDate[0] >= this.maxDateArray[0]) {
+      this.calendarOnScreenDate[0] = this.maxDateArray[0];
+      return;
+    }
+    this.calculateCalendarWeekList();
+  }
+
   calculateCalendarWeekList() {
     this._log('calculateCalendarWeekList');
 
@@ -363,6 +411,14 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     this.calculateCalendarWeekList();
   }
 
+  private decadeChanged(event: CustomEvent) {
+    this._log('decadeChanged');
+
+    if ( !(this.headerElement && ['yearList', 'decadeList'].includes(this.activeView)) ) return;
+
+    this.headerElement.title = `${event.detail[0]}-${event.detail[1]}`;
+  }
+
   private onDedcadeChangedTo(event: CustomEvent) {
     this._log('onDedcadeChangedTo');
 
@@ -372,8 +428,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     }
     requestAnimationFrame(() => {
       this.activeView = 'yearList';
+      this.calculateCalendarWeekList();
     });
-    this.calculateCalendarWeekList();
   }
 
   private handleHeaderTitle() {
@@ -393,9 +449,11 @@ export class GregorianCalendarElement extends CalendarBaseElement {
         break;
 
       case 'yearList':
-        const dedcadeStart = this.calendarOnScreenDate[0] - this.calendarOnScreenDate[0] % 10;
+      case 'decadeList':
         this.headerElement.calendarActiveView = this.activeView;
-        this.headerElement.title = `${dedcadeStart}-${dedcadeStart + 9}`;
+        if (this.decadeListElement) {
+          this.headerElement.title = `${this.decadeListElement.activeDecade[0]}-${this.decadeListElement.activeDecade[1]}`;
+        }
         break;
 
       default:

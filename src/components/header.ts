@@ -62,14 +62,14 @@ export class HeaderElement extends BaseElement {
   }
 
   protected render(): TemplateResult {
-    this._log('render');
+    this._log('render: %s', this.calendarActiveView);
 
     return html`
-      <div class="previous" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('prev-month', undefined); }}">
+      <div class="previous" ?hidden="${this.disableNavigation}"  @click="${this.onPrevArrowClick}">
         ${arrowBackward}
       </div>
       <p @click=${this.onTitleClick}>${this.title}</p>
-      <div class="next" ?hidden="${this.disableNavigation}"  @click="${() => { this._fire('next-month', undefined); }}">
+      <div class="next" ?hidden="${this.disableNavigation}"  @click="${this.onNextArrowClick}">
         ${arrowForward}
       </div>
     `;
@@ -97,10 +97,10 @@ export class HeaderElement extends BaseElement {
         break;
 
       case 'yearList':
-        this._fire('show-dedcade-list', undefined);
+        this._fire('show-decade-list', undefined);
         break;
 
-      case 'dedcadeList':
+      case 'decadeList':
         this._fire('show-year-list', undefined);
         break;
 
@@ -109,5 +109,51 @@ export class HeaderElement extends BaseElement {
         break;
     }
 
+  }
+
+  private onPrevArrowClick() {
+    this._log('onPrevArrowClick');
+
+    switch (this.calendarActiveView) {
+      case 'calendar':
+        this._fire('prev-month', undefined);
+        break;
+
+      case 'monthList':
+        this._fire('prev-year', undefined);
+        break;
+
+      case 'yearList':
+      case 'decadeList':
+        this._fire('prev-decade', undefined);
+        break;
+
+      default:
+        this._warn('Invalid view');
+        break;
+    }
+  }
+
+  private onNextArrowClick() {
+    this._log('onNextArrowClick');
+
+    switch (this.calendarActiveView) {
+      case 'calendar':
+        this._fire('next-month', undefined);
+        break;
+
+      case 'monthList':
+        this._fire('next-year', undefined);
+        break;
+
+      case 'yearList':
+      case 'decadeList':
+        this._fire('next-decade', undefined);
+        break;
+
+      default:
+        this._warn('Invalid view');
+        break;
+    }
   }
 }

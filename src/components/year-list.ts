@@ -10,6 +10,12 @@ export class YearList extends BaseElement {
   @property({ type: Number })
   activeYear: number | undefined;
 
+  @property({ type: Number })
+  maxYear: number | undefined;
+
+  @property({ type: Number })
+  minYear: number | undefined;
+
   private yearList: number[] | undefined;
 
   static styles = css`
@@ -52,17 +58,24 @@ export class YearList extends BaseElement {
 
   protected shouldUpdate(): boolean {
     this._log('shouldUpdate');
-    return this.currentYear ? true : false;
+    if (
+      !(
+        this.currentYear &&
+        this.minYear &&
+        this.maxYear
+      )
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
     this._log('update');
 
     if (changedProperties.has('currentYear')) {
-      const year = this.currentYear as number;
-      this.activeYear = year;
-      const dedcade = year - year % 10;
-      this.yearList = Array.from({ length: 10 }, (_item, index) => dedcade + index);
+      this.calculateYearList();
     }
 
     super.update(changedProperties);
@@ -92,6 +105,37 @@ export class YearList extends BaseElement {
     event.stopPropagation();
     if (!event['detail']) return;
     const _event = event as CustomEvent;
-    this.activeYear = _event.detail;
+    this.currentYear = this.activeYear = _event.detail;
+  }
+
+  private calculateYearList() {
+    this._log('calculateYearList');
+
+    const currentYear = this.currentYear as number;
+    const minYear = this.minYear as number;
+    const maxYear = this.maxYear as number;
+    let decade = currentYear - currentYear % 10;
+
+    // FIXME:
+    if (currentYear > maxYear || currentYear < minYear) return;
+
+    if (currentYear === maxYear) {
+      decade = maxYear - 10;
+      this.yearList = Array.from({ length: 11 }, (_item, index) => decade + index);
+      return;
+    }
+
+    if (maxYear - decade === 10) {
+      this.yearList = Array.from({ length: 11 }, (_item, index) => decade + index);
+      return;
+    }
+
+    if (decade + 9 > maxYear) {
+      this.yearList = Array.from({ length: maxYear - currentYear + 1 }, (_item, index) => decade + index);
+      return;
+    }
+
+    this.yearList = Array.from({ length: 10 }, (_item, index) => decade + index);
+    this.activeYear = currentYear;
   }
 }
