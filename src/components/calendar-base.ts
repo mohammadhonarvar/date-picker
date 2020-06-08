@@ -14,13 +14,16 @@ export default abstract class CalendarBaseElement extends BaseElement {
   initDate: string | undefined;
 
   @property({ type: String, attribute: 'min-date' })
-  protected minDate: string | undefined;
+  minDate: string | undefined;
 
   @property({ type: String, attribute: 'max-date' })
-  protected maxDate: string | undefined;
+  maxDate: string | undefined;
 
   @property({ type: String })
   activeView: string = 'calendar';
+
+  @property({ type: String, attribute: 'active-date' })
+  activeDate: string | undefined;
 
   @property({ type: Array })
   selectedDateList: number[][] = [];
@@ -31,8 +34,8 @@ export default abstract class CalendarBaseElement extends BaseElement {
   @property({ type: Boolean })
   shortWeekLabel: boolean = true;
 
-  @property({ type: Boolean })
-  rangeSelect: boolean = false;
+  @property({ type: Boolean, attribute: 'range-picker' })
+  rangePicker: boolean = false;
 
   @property({ type: Boolean })
   onlyShowCurrentMonthDays: boolean = false;
@@ -56,11 +59,11 @@ export default abstract class CalendarBaseElement extends BaseElement {
     if (
       !(
         this.initDate &&
-        (this.initDate.split('-')).length === 3 &&
+        ((this.initDate.split('-')).length === 3 || (this.initDate.split('/')).length === 3) &&
         this.minDate &&
-        (this.minDate.split('-')).length === 3 &&
+        ((this.minDate.split('-')).length === 3 || (this.minDate.split('/')).length === 3) &&
         this.maxDate &&
-        (this.maxDate.split('-')).length === 3
+        ((this.maxDate.split('-')).length === 3 || (this.maxDate.split('/')).length === 3)
       )
     ) {
       return false;

@@ -1,4 +1,4 @@
-import { html, customElement, TemplateResult, property, query, css } from 'lit-element';
+import { html, customElement, TemplateResult, property, query, css, queryAll } from 'lit-element';
 
 import CalendarBaseElement from './calendar-base';
 import { calendarBaseStyle } from '../base-style';
@@ -39,7 +39,11 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   @query('decade-list')
   decadeListElement: DecadeList | undefined;
 
+  @queryAll('.calendar-day')
+  calendarDayElementList: HTMLDivElement[] | undefined;
+
   protected calendarInitDate: number[] = [];
+  protected calendarActiveDate: number[] = [];
   protected calendarOnScreenDate: number[] = [];
   protected selectedDayList: number[] = [];
   protected calendarWeekList: number[][] = [];
@@ -90,7 +94,12 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       this.calendarInitDate = initDateArray;
       // We need a cloned array here
       this.calendarOnScreenDate = initDateArray.slice(0);
+      this.calendarActiveDate = initDateArray.slice(0);
       this.calendarWeekList = this.calculateCalendar();
+    }
+
+    if (changedProperties.has('activeDate')) {
+      this.calendarActiveDate = convertStringToNumberArray(this.activeDate as string, '/');
     }
 
     super.update(changedProperties);
@@ -99,27 +108,23 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   protected render(): TemplateResult {
     this._log('render');
 
-    const today = this.calculateIfTodayExist() ? this.calendarInitDate[2] : -1;
+    const today = this.ifActiveDateExist() ? this.calendarInitDate[2] : -1;
 
     return html`
-      ${['calendar', 'monthList', 'yearList', 'decadeList'].includes(this.activeView)
-        ?
-        html`
-          <header-element
-            @prev-month="${this.renderPrevMonth}"
-            @next-month="${this.renderNextMonth}"
-            @prev-year="${this.prevYear}"
-            @next-year="${this.nextYear}"
-            @prev-decade="${this.prevDecade}"
-            @next-decade="${this.nextDecade}"
-            @show-month-list="${() => { this.activeView = 'monthList' }}"
-            @show-year-list="${() => { this.activeView = 'yearList' }}"
-            @show-decade-list="${() => { this.activeView = 'decadeList' }}"
-            debug
-          >
-          </header-element>`
-        : ''
-      }
+      <header-element
+        ?hidden="${this.activeView === 'clock'}"
+        @prev-month="${this.renderPrevMonth}"
+        @next-month="${this.renderNextMonth}"
+        @prev-year="${this.prevYear}"
+        @next-year="${this.nextYear}"
+        @prev-decade="${this.prevDecade}"
+        @next-decade="${this.nextDecade}"
+        @show-month-list="${() => { this.activeView = 'monthList' }}"
+        @show-year-list="${() => { this.activeView = 'yearList' }}"
+        @show-decade-list="${() => { this.activeView = 'decadeList' }}"
+        debug
+      >
+      </header-element>
       <div class="views-container">
         <div class="view" ?hidden="${this.activeView !== 'calendar'}">
           <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
@@ -184,19 +189,29 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     if (this.weekLabelsElement && this.shortWeekLabel) {
       this.weekLabelsElement.setAttribute('short-name', '');
     }
-  }
 
+    if (this.rangePicker) {
+
+      if (this.selectedDateList.length === 2) {
+        this.highlightInRangeDayList();
+      }
+      else {
+        Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
+      }
+    }
+  }
 
   protected getWeekDaysTemplate(day: number, index: number, today: number): TemplateResult {
     // this._log('getCalendarWeekTemplate');
 
     const notForThisMonth = ((index === 0 && day > 7) || (index > 2 && day < 15));
-    const selected = this.selectedDayList.includes(day);
+    // const selected = this.selectedDayList.includes(day) && (this.calendarOnScreenDate[1] === this.selectedDateList[0][1] || this.calendarOnScreenDate[1] === this.selectedDateList[1][1]);
     // const edge = selected && props.selectedDate.length > 1;
     return html`
       <div
-        class="calendar-day${(notForThisMonth ? ' fade' : selected ? ' selected-day' : (this.highlightToday && today === day) ? ' current-date-highlight' : '')}"
-        @click="${notForThisMonth ? null : () => this.onDayClick(day)}"
+        class="calendar-day${(notForThisMonth ? ' fade' : (this.highlightToday && today === day) ? ' current-date-highlight' : '')}"
+        .date="${!notForThisMonth ? [this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], day] : undefined}"
+        @click="${this.onDayClick}"
       >
       <div class="calendar-day-data">
         ${this.onlyShowCurrentMonthDays && notForThisMonth ? '' : day}
@@ -206,24 +221,87 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   }
 
   // TODO: Complete this method
-  protected onDayClick(day: number) {
+  protected onDayClick(event: MouseEvent) {
     this._log('onDayClick');
-    let date = [this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], day];
-    if (this.rangeSelect && this.selectedDateList.length === 1) {
-      this.selectedDateList = this.sortRangeSelectedDates([...this.selectedDateList, date]);
-    } else {
-      this.selectedDateList = [date];
+
+    const currentDate = event.currentTarget?.['date'];
+    if (!currentDate) return;
+
+    if (!this.rangePicker) {
+      Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
+      (event.currentTarget as HTMLDivElement).setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87);');
     }
-    this.selectedDayList = this.calculateSelectedDayList();
-    // TODO:
-    // call onDateChange callback (user must provide) and pass the date
+    else {
+      this.selectedDateList.push(currentDate);
+      (event.currentTarget as HTMLDivElement).setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87);');
+
+      if (this.selectedDateList.length === 2) {
+        this.selectedDateList = [...this.selectedDateList];
+        this._log('onDayClick: %o', this.selectedDateList);
+      }
+
+      if (this.selectedDateList.length > 2) {
+        Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
+        this.selectedDateList = [];
+      }
+    }
   }
 
-  protected calculateIfTodayExist(): boolean {
-    this._log('calculateIfTodayExist');
+  protected highlightInRangeDayList() {
+    this._log('highlightInRangeDayList');
 
-    return (this.calendarInitDate[0] === this.calendarOnScreenDate[0] &&
-      this.calendarInitDate[1] === this.calendarOnScreenDate[1]);
+    const calendarDayElementListArray = Array.from(this.calendarDayElementList as HTMLDivElement[]);
+    calendarDayElementListArray.map(dayElement => { dayElement.removeAttribute('style'); });
+
+    if (this.selectedDateList[0][0] > this.selectedDateList[1][0] ||
+        (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] > this.selectedDateList[1][1]) ||
+        (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] === this.selectedDateList[1][1] &&  this.selectedDateList[0][2] > this.selectedDateList[1][2])
+    ) {
+      this.selectedDateList.reverse();
+    }
+
+    for (const dayElement of calendarDayElementListArray) {
+      if (!dayElement['date']) continue;
+      this.checkEdgeSelectedDate(dayElement);
+      if (!this.isInRange(dayElement['date'])) continue;
+      dayElement.setAttribute('style', 'background: #A0144F23; border-radius: 0;');
+    }
+  }
+
+  private checkEdgeSelectedDate(dayElement: HTMLDivElement) {
+    this._log('checkEdgeSelectedDate');
+    if (this.selectedDateList[0][0] === dayElement['date'][0] &&
+        this.selectedDateList[0][1] === dayElement['date'][1] &&
+        this.selectedDateList[0][2] === dayElement['date'][2]
+      ) {
+      dayElement.setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87); transition: ease-in 0.15s; border-radius: 50% 0 0 50%;');
+    }
+
+    if (this.selectedDateList[1][0] === dayElement['date'][0] &&
+        this.selectedDateList[1][1] === dayElement['date'][1] &&
+        this.selectedDateList[1][2] === dayElement['date'][2]
+    ) {
+      dayElement.setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87); transition: ease-in 0.15s;  border-radius: 0 50% 50% 0;');
+    }
+  }
+
+  private isInRange(dayDate: number[]) {
+    // this._log('ifIsInRange');
+    return (
+        (this.selectedDateList[0][0] <= dayDate[0] && this.selectedDateList[0][1] < dayDate[1]) ||
+        (this.selectedDateList[0][1] === dayDate[1] && this.selectedDateList[0][2] < dayDate[2])
+      ) &&
+      (
+        (this.selectedDateList[1][0] >= dayDate[0] && this.selectedDateList[1][1] > dayDate[1]) ||
+        (this.selectedDateList[1][1] === dayDate[1] && this.selectedDateList[1][2] > dayDate[2])
+      );
+  }
+
+  protected ifActiveDateExist(): boolean {
+    this._log('ifActiveDateExist');
+
+    return (this.calendarActiveDate[0] === this.calendarOnScreenDate[0] &&
+      this.calendarActiveDate[1] === this.calendarOnScreenDate[1]);
   }
 
   protected leapYearCalculation(year: number): number {
