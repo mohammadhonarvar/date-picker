@@ -17,6 +17,9 @@ export class DatePicker extends BaseElement {
   @property({ type: Boolean, attribute:'range-picker' })
   rangePicker: boolean = false;
 
+  @property({ type: Boolean, attribute:'time-picker' })
+  timePicker: boolean = false;
+
   @property({ type: String, attribute: 'date' })
   initialDate: string = this.solar ?
     fixPersianNumber(new Date().toLocaleDateString('fa')) :
@@ -72,7 +75,8 @@ export class DatePicker extends BaseElement {
           <solar-calendar-element
             debug
             date="${this.initialDate}"
-            range-picker
+            ?range-picker="${this.rangePicker}"
+            ?time-picker="${this.timePicker}"
             .selectedDate="${this.selectedDateList}"
           >
           </solar-calendar-element>`
@@ -80,7 +84,8 @@ export class DatePicker extends BaseElement {
           <gregorian-calendar-element
             debug
             date="${this.initialDate}"
-            range-picker
+            ?range-picker="${this.rangePicker}"
+            ?time-picker="${this.timePicker}"
             .selectedDate="${this.selectedDateList}"
           >
           </gregorian-calendar-element>`

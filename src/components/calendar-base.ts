@@ -37,6 +37,9 @@ export default abstract class CalendarBaseElement extends BaseElement {
   @property({ type: Boolean, attribute: 'range-picker' })
   rangePicker: boolean = false;
 
+  @property({ type: Boolean, attribute: 'time-picker' })
+  timePicker: boolean = false;
+
   @property({ type: Boolean })
   onlyShowCurrentMonthDays: boolean = false;
 

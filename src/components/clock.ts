@@ -1,4 +1,4 @@
-import { html, css, customElement, TemplateResult, property, queryAll } from 'lit-element';
+import { html, css, customElement, TemplateResult, property, queryAll, query } from 'lit-element';
 
 import { BaseElement } from '../base-element';
 import { addLeadingZero } from '../utils/add-leading-zero';
@@ -11,6 +11,15 @@ export class ClockElement extends BaseElement {
   time: string = `${addLeadingZero(dateNow.getHours())}:${addLeadingZero(dateNow.getMinutes())}:${addLeadingZero(dateNow.getSeconds())}`;
 
   private timeToArray: number[] = this.time.split(':').map(item => parseInt(item));
+
+  @query('input[name="hour"]')
+  hourInputElement: HTMLInputElement | undefined;
+
+  @query('input[name="minute"]')
+  minuteInputElement: HTMLInputElement | undefined;
+
+  @query('input[name="second"]')
+  secondInputElement: HTMLInputElement | undefined;
 
   @queryAll('input')
   inputElementList: HTMLInputElement[] | undefined;
@@ -120,10 +129,6 @@ export class ClockElement extends BaseElement {
         <div class="pointer hour" style="transform: translate(50%) rotate(${((this.timeToArray[0] % 12) * 30 + this.timeToArray[1] * 0.5) - 90.0}deg)"></div>
         <div class="pointer minute" style="transform: translate(50%) rotate(${(this.timeToArray[1] * 6) - 90.0}deg)"></div>
         <div class="pointer second" style="transform: translate(50%) rotate(${(this.timeToArray[2] * 6) - 90.0}deg)"></div>
-        <!-- ${this.timeToArray.length === 3
-        ? html``
-        : ''
-      } -->
         <div class="center-dot"></div>
       </div>
       <div class="clock-input-container">
@@ -131,23 +136,23 @@ export class ClockElement extends BaseElement {
           name="hour"
           type="text"
           maxLength="2"
-          value="${this.timeToArray[0]}"
+          value="${addLeadingZero(this.timeToArray[0])}"
           @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
-          @blur="${(event: Event) => { (event.target as HTMLInputElement).removeAttribute('focused') }}"
+          @blur="${this.onInputBlur}"
           @keydown="${this.onKeyDown}"
           @keyup="${this.onKeyUp}"
-          @change="${this.changeClock}"
+          @input="${this.onInput}"
         /> :
         <input
           name="minute"
           type="text"
           maxLength="2"
-          value="${this.timeToArray[1]}"
+          value="${addLeadingZero(this.timeToArray[1])}"
           @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
-          @blur="${(event: Event) => { (event.target as HTMLInputElement).removeAttribute('focused') }}"
+          @blur="${this.onInputBlur}"
           @keydown="${this.onKeyDown}"
+          @input="${this.onInput}"
           @keyup="${this.onKeyUp}"
-          @change="${this.changeClock}"
         />
         ${this.timeToArray.length === 3
         ? html`
@@ -155,12 +160,12 @@ export class ClockElement extends BaseElement {
                 name="second"
                 type="text"
                 maxLength="2"
-                value="${this.timeToArray[2]}"
+                value="${addLeadingZero(this.timeToArray[2])}"
                 @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
-                @blur="${(event: Event) => { (event.target as HTMLInputElement).removeAttribute('focused') }}"
+                @blur="${this.onInputBlur}"
                 @keydown="${this.onKeyDown}"
                 @keyup="${this.onKeyUp}"
-                @change="${this.changeClock}"
+                @input="${this.onInput}"
               />
             `
         : ''
@@ -170,49 +175,30 @@ export class ClockElement extends BaseElement {
   }
 
   protected validClock(inputName: string, clockPointerValue: string) {
+    this._log('validClock');
+
     let clockRegularExpression = new RegExp('^[0-9 ]*$');
     if (!clockRegularExpression.test(clockPointerValue)) return false;
 
     if (inputName === 'hour') {
+      this._log('validClock: %s', clockPointerValue);
       if (clockPointerValue[0] >= '3' || (clockPointerValue[0] >= '2' && clockPointerValue[1] >= '4')) return false;
     } else {
+      this._log('validClock: %s && %s', clockPointerValue[0], clockPointerValue[1]);
       if (clockPointerValue[0] >= '6') return false;
     }
 
     return true;
   };
 
-  protected changeClock(event: KeyboardEvent) {
-    this._log('changeClock');
+  protected onInputBlur(event: KeyboardEvent) {
+    this._log('onInputBlur');
 
-    let clockPointerValue = (event.target?.['value'] as string).trim();
+    (event.target as HTMLInputElement).removeAttribute('focused');
+    const inputValue = (event.target?.['value'] as string).trim();
     const inputName = event.target?.['name'];
-
-    if (!this.validClock(inputName, clockPointerValue)) return;
-
-    switch (inputName) {
-      case 'hour':
-        this.timeToArray[0] = parseInt(clockPointerValue);
-        break;
-
-      case 'minute':
-        this.timeToArray[1] = parseInt(clockPointerValue);
-        break;
-
-      case 'second':
-        this.timeToArray[2] = parseInt(clockPointerValue);
-        break;
-
-      default:
-        break;
-    }
-
-    this.requestUpdate();
-    this._fire('time-changed-to', {
-      stringTime: `${addLeadingZero(this.timeToArray[0])}:${addLeadingZero(this.timeToArray[1])}:${addLeadingZero(this.timeToArray[2])}`,
-      arrayTime: this.timeToArray
-    });
-  };
+    this.updateInputValue(inputName, parseInt(inputValue));
+  }
 
   protected changeClockValue(inputValue: number, inputName: string, operation: boolean) {
     this._log('changeClockValue');
@@ -227,24 +213,8 @@ export class ClockElement extends BaseElement {
     }
 
     const operator = operation ? 1 : -1;
-    switch (inputName) {
-      case 'hour':
-        this.timeToArray[0] = clockPointerValue + operator;
-        break;
+    this.updateInputValue(inputName, clockPointerValue + operator);
 
-      case 'minute':
-        this.timeToArray[1] = clockPointerValue + operator;
-        break;
-
-      case 'second':
-        this.timeToArray[2] = clockPointerValue + operator;
-        break;
-
-      default:
-        break;
-    }
-
-    this.requestUpdate();
     this._fire('time-changed-to', {
       stringTime: `${addLeadingZero(this.timeToArray[0])}:${addLeadingZero(this.timeToArray[1])}:${addLeadingZero(this.timeToArray[2])}`,
       arrayTime: this.timeToArray
@@ -255,20 +225,18 @@ export class ClockElement extends BaseElement {
     this._log('onKeyUp');
     if (event.keyCode !== 13) return;
 
-    if (!this.inputElementList) return
-
     let focusedInputIndex = -1;
-    for (let i = 0; i < this.inputElementList.length; i++) {
-      if (!this.inputElementList[i].hasAttribute('focused')) continue;
+    for (let i = 0; i < this.inputElementList!.length; i++) {
+      if (!this.inputElementList![i].hasAttribute('focused')) continue;
       focusedInputIndex = i;
       break;
     }
 
     if (focusedInputIndex === 2) {
-      this.inputElementList[focusedInputIndex].blur();
+      this.inputElementList![focusedInputIndex].blur();
     }
     else {
-      this.inputElementList[focusedInputIndex + 1].focus();
+      this.inputElementList![focusedInputIndex + 1].focus();
     }
   };
 
@@ -287,4 +255,56 @@ export class ClockElement extends BaseElement {
       this.changeClockValue(parseInt(inputValue), inputName, false);
     }
   };
+
+  protected onInput(event: KeyboardEvent) {
+    this._log('onInput');
+
+    const inputValue = (event.target?.['value'] as string).trim();
+    const inputName = event.target?.['name'];
+
+    if (inputValue.length < 2) return;
+
+    this.updateInputValue(inputName, parseInt(inputValue));
+  }
+
+  protected updateInputValue(inputName: string, newVal: number) {
+    this._log('updateAllInputValues');
+
+    switch (inputName) {
+      case 'hour':
+        if (newVal > 23) {
+          this.hourInputElement!.value = '00';
+          this.timeToArray[0] = 0;
+        }
+        else {
+          this.hourInputElement!.value = addLeadingZero(newVal);
+          this.timeToArray[0] = newVal;
+        }
+        break;
+
+      case 'minute':
+        if (newVal > 59) {
+          this.minuteInputElement!.value = '00';
+          this.timeToArray[1] = 0;
+        }
+        else {
+          this.minuteInputElement!.value = addLeadingZero(newVal);
+          this.timeToArray[1] = newVal;
+        }
+        break;
+
+      case 'second':
+        if (newVal > 59) {
+          this.secondInputElement!.value = '00';
+          this.timeToArray[2] = 0;
+        }
+        else {
+          this.secondInputElement!.value = addLeadingZero(newVal);
+          this.timeToArray[2] = newVal;
+        }
+        break;
+      }
+
+      this.requestUpdate();
+  }
 }

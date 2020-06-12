@@ -14,9 +14,11 @@ import { DecadeList } from './decade-list';
 import './decade-list';
 import { HeaderElement } from './header';
 import './header';
-
-import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
+import './clock';
 import './week-labels';
+
+import { arrowBackward, clock } from '../utils/icon';
+import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
 
 // This class is based on gregorian, then we can use the following:
 import { weekDayList, monthsDaysCount, monthList } from '../data/solar';
@@ -47,9 +49,6 @@ export class SolarCalendarElement extends CalendarBaseElement {
   protected leapMonthIndex: number = 11;
   protected weekDayList = weekDayList;
 
-  private minDateGregorianArray: number[];
-  private maxDateGregorianArray: number[];
-
   static styles = [calendarBaseStyle, css``];
 
   constructor() {
@@ -59,10 +58,8 @@ export class SolarCalendarElement extends CalendarBaseElement {
     this.maxDate = '1500/1/1';
 
     this.minDateArray = convertStringToNumberArray(this.minDate as string, '/');
-    this.minDateGregorianArray = this.convertToGregorian(this.minDateArray[0], this.minDateArray[1], this.minDateArray[2]);
 
     this.maxDateArray = convertStringToNumberArray(this.maxDate, '/');
-    this.maxDateGregorianArray = this.convertToGregorian(this.maxDateArray[0], this.maxDateArray[1], this.maxDateArray[2]);
 
     this.monthList = monthList;
     this.monthsDaysCount = monthsDaysCount;
@@ -74,12 +71,10 @@ export class SolarCalendarElement extends CalendarBaseElement {
 
     if (changedProperties.has('minDate')) {
       this.minDateArray = convertStringToNumberArray(this.minDate as string, '/');
-      this.minDateGregorianArray = this.convertToGregorian(this.minDateArray[0], this.minDateArray[1], this.minDateArray[2]);
     }
 
     if (changedProperties.has('maxDate')) {
       this.maxDateArray = convertStringToNumberArray(this.maxDate as string, '/');
-      this.maxDateGregorianArray = this.convertToGregorian(this.maxDateArray[0], this.maxDateArray[1], this.maxDateArray[2]);
     }
 
     // Prevent re-rendering when shortWeekLabel is changed
@@ -93,12 +88,19 @@ export class SolarCalendarElement extends CalendarBaseElement {
     // Create array of initDate when it's changed
     if (changedProperties.has('initDate')) {
       const initDateArray = convertStringToNumberArray(this.initDate as string, '/');
-      this.calendarGregorianInitDate = this.convertToGregorian(initDateArray[0], initDateArray[1], initDateArray[2]);
-      if (new Date(`${this.calendarGregorianInitDate[0]}-${this.calendarGregorianInitDate[1]}-${this.calendarGregorianInitDate[2]}`).getTime() > new Date(`${this.maxDateGregorianArray[0]}-${this.maxDateGregorianArray[1]}-${this.maxDateGregorianArray[2]}`).getTime()) {
+      if (
+        initDateArray[0] > this.maxDateArray[0] ||
+        (initDateArray[0] === this.maxDateArray[0] && initDateArray[1] > this.maxDateArray[1]) ||
+        (initDateArray[0] === this.maxDateArray[0] && initDateArray[1] === this.maxDateArray[1] && initDateArray[2] > this.maxDateArray[2])
+      ) {
         this.initDate = this.maxDate as string;
       }
 
-      if (new Date(`${this.calendarGregorianInitDate[0]}-${this.calendarGregorianInitDate[1]}-${this.calendarGregorianInitDate[2]}`).getTime() < new Date(`${this.minDateGregorianArray[0]}-${this.minDateGregorianArray[1]}-${this.minDateGregorianArray[2]}`).getTime()) {
+      if (
+        initDateArray[0] < this.minDateArray[0] ||
+        (initDateArray[0] === this.minDateArray[0] && initDateArray[1] < this.minDateArray[1]) ||
+        (initDateArray[0] === this.minDateArray[0] && initDateArray[1] === this.minDateArray[1] && initDateArray[2] < this.minDateArray[2])
+      ) {
         this.initDate = this.minDate as string;
       }
 
@@ -134,7 +136,6 @@ export class SolarCalendarElement extends CalendarBaseElement {
         @show-month-list="${() => { this.activeView = 'monthList' }}"
         @show-year-list="${() => { this.activeView = 'yearList' }}"
         @show-decade-list="${() => { this.activeView = 'decadeList' }}"
-        debug
       >
       </header-element>
       <div class="views-container">
@@ -156,7 +157,6 @@ export class SolarCalendarElement extends CalendarBaseElement {
           ?hidden="${this.activeView !== 'monthList'}"
           .monthList="${this.monthList}"
           @month-changed-to="${this.onMonthChangedTo}"
-          debug
         >
         </month-list>
         <year-list
@@ -166,7 +166,6 @@ export class SolarCalendarElement extends CalendarBaseElement {
           .minYear="${this.minDateArray[0]}"
           .maxYear="${this.maxDateArray[0]}"
           @year-changed-to="${this.onYearChangedTo}"
-          debug
         >
         </year-list>
         <decade-list
@@ -177,10 +176,24 @@ export class SolarCalendarElement extends CalendarBaseElement {
           .maxYear="${this.maxDateArray[0]}"
           @decade-changed-to="${this.onDedcadeChangedTo}"
           @decade-changed="${this.decadeChanged}"
-          debug
         >
-        </year-list>
+        </decade-list>
+        <clock-element
+          debug
+          ?hidden="${this.activeView !== 'clock'}"
+          @time-changed-to="${(event: CustomEvent) => { this._fire('time-changed-to', event.detail); }}"
+        >
+        </clock-element>
       </div>
+      ${
+        this.timePicker
+        ? html`
+            <div class="goto-time-view" @click="${() => { this.activeView === 'clock' ? this.activeView = 'calendar' : this.activeView = 'clock'}}">
+              ${this.activeView === 'clock' ? arrowBackward : clock}
+            </div>
+          `
+        : ''
+      }
     `;
   }
 

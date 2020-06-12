@@ -9,9 +9,11 @@ import { DecadeList } from './decade-list';
 import './decade-list';
 import { HeaderElement } from './header';
 import './header';
-
-import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
+import './clock';
 import './week-labels';
+
+import { arrowBackward, clock } from '../utils/icon';
+import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
 
 // This class is based on gregorian, then we can use the following:
 import { weekDayList, monthsDaysCount, monthList } from '../data/gregorian';
@@ -167,8 +169,23 @@ export class GregorianCalendarElement extends CalendarBaseElement {
           @decade-changed="${this.decadeChanged}"
           debug
         >
-        </year-list>
+        </decade-list>
+        <clock-element
+          debug
+          ?hidden="${this.activeView !== 'clock'}"
+          @time-changed-to="${(event: CustomEvent) => { this._fire('time-changed-to', event.detail); }}"
+        >
+        </clock-element>
       </div>
+      ${
+        this.timePicker
+        ? html`
+            <div class="goto-time-view" @click="${() => { this.activeView === 'clock' ? this.activeView = 'calendar' : this.activeView = 'clock'}}">
+              ${this.activeView === 'clock' ? arrowBackward : clock}
+            </div>
+          `
+        : ''
+      }
     `;
   }
 

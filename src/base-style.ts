@@ -109,4 +109,17 @@ export const calendarBaseStyle = css`
   .calendar-row .fade {
     color: rgba(0, 0, 0, 0.38);
   }
+
+  .goto-time-view {
+    height: 42px;
+    border-radius: 8px;
+    background: #FFFFFF;
+    margin-top: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    fill: rgba(0, 0, 0, 0.60);
+  }
 `;
