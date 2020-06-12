@@ -79,6 +79,7 @@ export class ClockElement extends BaseElement {
       color: rgba(0, 0, 0, 0.38);
       margin: 24px auto;
       display: flex;
+      align-items: center;
     }
 
     .clock-input-container input {
@@ -120,9 +121,9 @@ export class ClockElement extends BaseElement {
         <div class="pointer minute" style="transform: translate(50%) rotate(${(this.timeToArray[1] * 6) - 90.0}deg)"></div>
         <div class="pointer second" style="transform: translate(50%) rotate(${(this.timeToArray[2] * 6) - 90.0}deg)"></div>
         <!-- ${this.timeToArray.length === 3
-          ? html``
-          : ''
-        } -->
+        ? html``
+        : ''
+      } -->
         <div class="center-dot"></div>
       </div>
       <div class="clock-input-container">
@@ -136,7 +137,7 @@ export class ClockElement extends BaseElement {
           @keydown="${this.onKeyDown}"
           @keyup="${this.onKeyUp}"
           @change="${this.changeClock}"
-        >
+        /> :
         <input
           name="minute"
           type="text"
@@ -147,10 +148,10 @@ export class ClockElement extends BaseElement {
           @keydown="${this.onKeyDown}"
           @keyup="${this.onKeyUp}"
           @change="${this.changeClock}"
-        >
+        />
         ${this.timeToArray.length === 3
-          ? html`
-              <input
+        ? html`
+              : <input
                 name="second"
                 type="text"
                 maxLength="2"
@@ -160,10 +161,10 @@ export class ClockElement extends BaseElement {
                 @keydown="${this.onKeyDown}"
                 @keyup="${this.onKeyUp}"
                 @change="${this.changeClock}"
-              >
+              />
             `
-          : ''
-        }
+        : ''
+      }
       </div>
     `
   }
@@ -183,7 +184,7 @@ export class ClockElement extends BaseElement {
 
   protected changeClock(event: KeyboardEvent) {
     this._log('changeClock');
-    
+
     let clockPointerValue = (event.target?.['value'] as string).trim();
     const inputName = event.target?.['name'];
 
@@ -277,7 +278,7 @@ export class ClockElement extends BaseElement {
     const inputValue = event.target?.['value'] as string;
     const inputName = event.target?.['name'];
 
-    if ( !(inputValue && inputName) ) return;
+    if (!(inputValue && inputName)) return;
 
     if (event.keyCode === 38) {
       this.changeClockValue(parseInt(inputValue), inputName, true);
