@@ -10,7 +10,7 @@ export class ClockElement extends BaseElement {
   @property({ type: String })
   time: string = `${addLeadingZero(dateNow.getHours())}:${addLeadingZero(dateNow.getMinutes())}:${addLeadingZero(dateNow.getSeconds())}`;
 
-  private timeToArray: number[] = this.time.split(':').map(item => parseInt(item));
+  private timeArray: number[] = this.time.split(':').map(item => parseInt(item));
 
   @query('input[name="hour"]')
   hourInputElement: HTMLInputElement | undefined;
@@ -115,7 +115,7 @@ export class ClockElement extends BaseElement {
     this._log('update');
 
     if (changedProperties.has('time')) {
-      this.timeToArray = this.time.split(':').map(item => parseInt(item));
+      this.timeArray = this.time.split(':').map(item => parseInt(item));
     }
 
     super.update(changedProperties);
@@ -126,9 +126,9 @@ export class ClockElement extends BaseElement {
 
     return html`
       <div class="clock">
-        <div class="pointer hour" style="transform: translate(50%) rotate(${((this.timeToArray[0] % 12) * 30 + this.timeToArray[1] * 0.5) - 90.0}deg)"></div>
-        <div class="pointer minute" style="transform: translate(50%) rotate(${(this.timeToArray[1] * 6) - 90.0}deg)"></div>
-        <div class="pointer second" style="transform: translate(50%) rotate(${(this.timeToArray[2] * 6) - 90.0}deg)"></div>
+        <div class="pointer hour" style="transform: translate(50%) rotate(${((this.timeArray[0] % 12) * 30 + this.timeArray[1] * 0.5) - 90.0}deg)"></div>
+        <div class="pointer minute" style="transform: translate(50%) rotate(${(this.timeArray[1] * 6) - 90.0}deg)"></div>
+        <div class="pointer second" style="transform: translate(50%) rotate(${(this.timeArray[2] * 6) - 90.0}deg)"></div>
         <div class="center-dot"></div>
       </div>
       <div class="clock-input-container">
@@ -136,7 +136,7 @@ export class ClockElement extends BaseElement {
           name="hour"
           type="text"
           maxLength="2"
-          value="${addLeadingZero(this.timeToArray[0])}"
+          value="${addLeadingZero(this.timeArray[0])}"
           @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
           @blur="${this.onInputBlur}"
           @keydown="${this.onKeyDown}"
@@ -147,20 +147,20 @@ export class ClockElement extends BaseElement {
           name="minute"
           type="text"
           maxLength="2"
-          value="${addLeadingZero(this.timeToArray[1])}"
+          value="${addLeadingZero(this.timeArray[1])}"
           @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
           @blur="${this.onInputBlur}"
           @keydown="${this.onKeyDown}"
           @input="${this.onInput}"
           @keyup="${this.onKeyUp}"
         />
-        ${this.timeToArray.length === 3
+        ${this.timeArray.length === 3
         ? html`
               : <input
                 name="second"
                 type="text"
                 maxLength="2"
-                value="${addLeadingZero(this.timeToArray[2])}"
+                value="${addLeadingZero(this.timeArray[2])}"
                 @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
                 @blur="${this.onInputBlur}"
                 @keydown="${this.onKeyDown}"
@@ -216,8 +216,8 @@ export class ClockElement extends BaseElement {
     this.updateInputValue(inputName, clockPointerValue + operator);
 
     this._fire('time-changed-to', {
-      stringTime: `${addLeadingZero(this.timeToArray[0])}:${addLeadingZero(this.timeToArray[1])}:${addLeadingZero(this.timeToArray[2])}`,
-      arrayTime: this.timeToArray
+      stringTime: `${addLeadingZero(this.timeArray[0])}:${addLeadingZero(this.timeArray[1])}:${addLeadingZero(this.timeArray[2])}`,
+      arrayTime: this.timeArray
     });
   };
 
@@ -243,17 +243,21 @@ export class ClockElement extends BaseElement {
   protected onKeyDown(event: KeyboardEvent) {
     this._log('onKeyDown');
 
+    if (event.keyCode !== 38 && event.keyCode !== 40) return;
+
     const inputValue = event.target?.['value'] as string;
     const inputName = event.target?.['name'];
 
-    if (!(inputValue && inputName)) return;
+    this.changeClockValue(parseInt(inputValue), inputName, event.keyCode === 38);
 
-    if (event.keyCode === 38) {
-      this.changeClockValue(parseInt(inputValue), inputName, true);
-    }
-    else if (event.keyCode === 40) {
-      this.changeClockValue(parseInt(inputValue), inputName, false);
-    }
+    // if (!(inputValue && inputName)) return;
+
+    // if (event.keyCode === 38) {
+    //   this.changeClockValue(parseInt(inputValue), inputName, true);
+    // }
+    // else if (event.keyCode === 40) {
+    //   this.changeClockValue(parseInt(inputValue), inputName, false);
+    // }
   };
 
   protected onInput(event: KeyboardEvent) {
@@ -274,37 +278,37 @@ export class ClockElement extends BaseElement {
       case 'hour':
         if (newVal > 23) {
           this.hourInputElement!.value = '00';
-          this.timeToArray[0] = 0;
+          this.timeArray[0] = 0;
         }
         else {
           this.hourInputElement!.value = addLeadingZero(newVal);
-          this.timeToArray[0] = newVal;
+          this.timeArray[0] = newVal;
         }
         break;
 
       case 'minute':
         if (newVal > 59) {
           this.minuteInputElement!.value = '00';
-          this.timeToArray[1] = 0;
+          this.timeArray[1] = 0;
         }
         else {
           this.minuteInputElement!.value = addLeadingZero(newVal);
-          this.timeToArray[1] = newVal;
+          this.timeArray[1] = newVal;
         }
         break;
 
       case 'second':
         if (newVal > 59) {
           this.secondInputElement!.value = '00';
-          this.timeToArray[2] = 0;
+          this.timeArray[2] = 0;
         }
         else {
           this.secondInputElement!.value = addLeadingZero(newVal);
-          this.timeToArray[2] = newVal;
+          this.timeArray[2] = newVal;
         }
         break;
-      }
+    }
 
-      this.requestUpdate();
+    this.requestUpdate();
   }
 }
