@@ -139,8 +139,7 @@ export class ClockElement extends BaseElement {
           value="${addLeadingZero(this.timeArray[0])}"
           @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
           @blur="${this.onInputBlur}"
-          @keydown="${this.onKeyDown}"
-          @keyup="${this.onKeyUp}"
+          @keyup="${this.onKeyup}"
           @input="${this.onInput}"
         /> :
         <input
@@ -150,9 +149,8 @@ export class ClockElement extends BaseElement {
           value="${addLeadingZero(this.timeArray[1])}"
           @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
           @blur="${this.onInputBlur}"
-          @keydown="${this.onKeyDown}"
+          @keyup="${this.onKeyup}"
           @input="${this.onInput}"
-          @keyup="${this.onKeyUp}"
         />
         ${this.timeArray.length === 3
         ? html`
@@ -163,8 +161,7 @@ export class ClockElement extends BaseElement {
                 value="${addLeadingZero(this.timeArray[2])}"
                 @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
                 @blur="${this.onInputBlur}"
-                @keydown="${this.onKeyDown}"
-                @keyup="${this.onKeyUp}"
+                @keyup="${this.onKeyup}"
                 @input="${this.onInput}"
               />
             `
@@ -200,65 +197,71 @@ export class ClockElement extends BaseElement {
     this.updateInputValue(inputName, parseInt(inputValue));
   }
 
-  protected changeClockValue(inputValue: number, inputName: string, operation: boolean) {
+  protected changeClockValue(inputValue: number, inputName: string, arrowName?: string) {
     this._log('changeClockValue');
 
     let clockPointerValue: number = inputValue;
 
-    if (!operation && inputValue < 1) {
+    if (arrowName === 'up') {
+      this.updateInputValue(inputName, clockPointerValue + 1);
+      return;
+    }
+
+    if (arrowName === 'down') {
+      this.updateInputValue(inputName, clockPointerValue -1);
+      return;
+    }
+
+    if (inputValue < 1) {
       clockPointerValue = inputName === 'hour' ? 24 : 60;
     }
-    else if (operation && ((inputName === 'hour' && inputValue > 22) || inputValue > 58)) {
+    else if ((inputName === 'hour' && inputValue > 22) || inputValue > 58) {
       clockPointerValue = -1;
     }
-
-    const operator = operation ? 1 : -1;
-    this.updateInputValue(inputName, clockPointerValue + operator);
-
-    this._fire('time-changed-to', {
-      stringTime: `${addLeadingZero(this.timeArray[0])}:${addLeadingZero(this.timeArray[1])}:${addLeadingZero(this.timeArray[2])}`,
-      arrayTime: this.timeArray
-    });
   };
 
-  protected onKeyUp(event: KeyboardEvent) {
-    this._log('onKeyUp');
-    if (event.keyCode !== 13) return;
+  protected onKeyup(event: KeyboardEvent) {
+    this._log('onKeyup');
 
-    let focusedInputIndex = -1;
-    for (let i = 0; i < this.inputElementList!.length; i++) {
-      if (!this.inputElementList![i].hasAttribute('focused')) continue;
-      focusedInputIndex = i;
-      break;
+    if (
+      !(
+        [8, 13, 38, 40, 46].includes(event.keyCode) ||
+        /[0-9]/.test(String.fromCharCode(event.keyCode))
+      )
+    ) {
+      event.preventDefault();
+      return;
     }
 
-    if (focusedInputIndex === 2) {
-      this.inputElementList![focusedInputIndex].blur();
-    }
-    else {
-      this.inputElementList![focusedInputIndex + 1].focus();
-    }
-  };
+    if (event.keyCode === 13) {
+      let focusedInputIndex = -1;
+      for (let i = 0; i < this.inputElementList!.length; i++) {
+        if (!this.inputElementList![i].hasAttribute('focused')) continue;
+        focusedInputIndex = i;
+        break;
+      }
 
-  protected onKeyDown(event: KeyboardEvent) {
-    this._log('onKeyDown');
+      if (focusedInputIndex === 2) {
+        this.inputElementList![focusedInputIndex].blur();
+      }
+      else {
+        this.inputElementList![focusedInputIndex + 1].focus();
+      }
 
-    if (event.keyCode !== 38 && event.keyCode !== 40) return;
+      return;
+    }
 
     const inputValue = event.target?.['value'] as string;
     const inputName = event.target?.['name'];
 
-    this.changeClockValue(parseInt(inputValue), inputName, event.keyCode === 38);
+    const arrowName = (event.keyCode === 38) ? 'up' : ((event.keyCode === 40) ? 'down' : '');
+    this.changeClockValue(parseInt(inputValue), inputName, arrowName);
 
-    // if (!(inputValue && inputName)) return;
-
-    // if (event.keyCode === 38) {
-    //   this.changeClockValue(parseInt(inputValue), inputName, true);
-    // }
-    // else if (event.keyCode === 40) {
-    //   this.changeClockValue(parseInt(inputValue), inputName, false);
-    // }
-  };
+    this._fire('time-changed', {
+      stringTime: `${addLeadingZero(this.timeArray[0])}:${addLeadingZero(this.timeArray[1])}:${addLeadingZero(this.timeArray[2])}`,
+      arrayTime: this.timeArray
+    });
+  }
 
   protected onInput(event: KeyboardEvent) {
     this._log('onInput');
