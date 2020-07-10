@@ -115,8 +115,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     return html`
       <header-element
         ?hidden="${this.activeView === 'clock'}"
-        @prev-month="${this.renderPrevMonth}"
-        @next-month="${this.renderNextMonth}"
+        @prev-month="${this.prevMonth}"
+        @next-month="${this.nextMonth}"
         @prev-year="${this.prevYear}"
         @next-year="${this.nextYear}"
         @prev-decade="${this.prevDecade}"
@@ -173,7 +173,6 @@ export class GregorianCalendarElement extends CalendarBaseElement {
         <clock-element
           debug
           ?hidden="${this.activeView !== 'clock'}"
-          @time-changed-to="${(event: CustomEvent) => { this._fire('time-changed-to', event.detail); }}"
         >
         </clock-element>
       </div>
@@ -249,7 +248,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     const currentDate = event.currentTarget?.['date'];
     if (!currentDate) return;
 
-    this._fire('date-change', currentDate);
+    this._fire('date-changed', (currentDate as []).join('-'));
 
     if (!this.rangePicker) {
       Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
@@ -409,8 +408,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     return days;
   };
 
-  renderPrevMonth() {
-    this._log('renderPrevMonth');
+  prevMonth() {
+    this._log('prevMonth');
 
     if (this.calendarOnScreenDate[1] - 1 === 0) {
       if (this.calendarOnScreenDate[0] - 1 > this.minDateArray[0]) {
@@ -424,12 +423,13 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       --this.calendarOnScreenDate[1];
     }
 
+    this._fire('date-changed', this.calendarOnScreenDate.join('-'));
     this.calculateCalendarWeekList();
     this.handleHeaderTitle();
   }
 
-  renderNextMonth() {
-    this._log('renderNextMonth');
+  nextMonth() {
+    this._log('nextMonth');
 
     if (this.calendarOnScreenDate[1] + 1 > 12) {
       if (this.calendarOnScreenDate[0] + 1 < this.maxDateArray[0]) {
@@ -443,18 +443,20 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       ++this.calendarOnScreenDate[1];
     }
 
+    this._fire('date-changed', this.calendarOnScreenDate.join('-'));
     this.calculateCalendarWeekList();
     this.handleHeaderTitle();
   }
 
   prevYear() {
     this._log('prevYear');
+
     this.calendarOnScreenDate[0] = this.calendarOnScreenDate[0] - 1;
     if (this.calendarOnScreenDate[0] <= this.minDateArray[0]) {
       this.calendarOnScreenDate[0] = this.minDateArray[0];
     }
 
-    this._fire('date-change', this.calendarOnScreenDate.join('/'));
+    this._fire('date-changed', this.calendarOnScreenDate.join('-'));
     this.calculateCalendarWeekList();
   }
 
@@ -466,7 +468,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       this.calendarOnScreenDate[0] = this.maxDateArray[0];
     }
 
-    this._fire('date-change', this.calendarOnScreenDate.join('/'));
+    this._fire('date-changed', this.calendarOnScreenDate.join('-'));
     this.calculateCalendarWeekList();
   }
 
