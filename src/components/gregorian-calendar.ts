@@ -203,12 +203,17 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       this.handleHeaderTitle();
     }
 
-    if (this.weekLabelsElement && this.shortWeekLabel) {
-      this.weekLabelsElement.setAttribute('short-name', '');
+    // Prevent re-rendering when shortWeekLabel is changed
+    if (changedProperties.has('shortWeekLabel')) {
+      if (!this.shortWeekLabel) {
+        this.weekLabelsElement.removeAttribute('short-name');
+      }
+      else {
+        this.weekLabelsElement.setAttribute('short-name', '');
+      }
     }
 
-    if (this.rangePicker) {
-
+    if (changedProperties.has('selectedDateList') || (changedProperties.has('rangePicker') && this.rangePicker)) {
       if (this.selectedDateList.length === 2) {
         this.highlightInRangeDayList();
       }
@@ -243,6 +248,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
 
     const currentDate = event.currentTarget?.['date'];
     if (!currentDate) return;
+
+    this._fire('date-change', currentDate);
 
     if (!this.rangePicker) {
       Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
@@ -446,6 +453,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     if (this.calendarOnScreenDate[0] <= this.minDateArray[0]) {
       this.calendarOnScreenDate[0] = this.minDateArray[0];
     }
+
+    this._fire('date-change', this.calendarOnScreenDate.join('/'));
     this.calculateCalendarWeekList();
   }
 
@@ -456,6 +465,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     if (this.calendarOnScreenDate[0] >= this.maxDateArray[0]) {
       this.calendarOnScreenDate[0] = this.maxDateArray[0];
     }
+
+    this._fire('date-change', this.calendarOnScreenDate.join('/'));
     this.calculateCalendarWeekList();
   }
 

@@ -1,8 +1,3 @@
-/**
- * This class is based on gregorian, then you can write your calendar with your data.
- * For example you can write persian calendar with your persian data (days label, months label & etc...)
-*/
-
 import { customElement, query, TemplateResult, html, css, queryAll } from 'lit-element';
 
 import CalendarBaseElement from './calendar-base';
@@ -75,14 +70,6 @@ export class SolarCalendarElement extends CalendarBaseElement {
 
     if (changedProperties.has('maxDate')) {
       this.maxDateArray = convertStringToNumberArray(this.maxDate as string, '/');
-    }
-
-    // Prevent re-rendering when shortWeekLabel is changed
-    if (changedProperties.has('shortWeekLabel') && !this.shortWeekLabel) {
-      if (this.weekLabelsElement) {
-        this.weekLabelsElement.removeAttribute('short-name');
-        return;
-      }
     }
 
     // Create array of initDate when it's changed
@@ -211,12 +198,17 @@ export class SolarCalendarElement extends CalendarBaseElement {
       this.handleHeaderTitle();
     }
 
-    if (this.weekLabelsElement && this.shortWeekLabel) {
-      this.weekLabelsElement.setAttribute('short-name', '');
+    // Prevent re-rendering when shortWeekLabel is changed
+    if (changedProperties.has('shortWeekLabel')) {
+      if (!this.shortWeekLabel) {
+        this.weekLabelsElement.removeAttribute('short-name');
+      }
+      else {
+        this.weekLabelsElement.setAttribute('short-name', '');
+      }
     }
 
-    if (this.rangePicker) {
-
+    if (changedProperties.has('selectedDateList') || (changedProperties.has('rangePicker') && this.rangePicker)) {
       if (this.selectedDateList.length === 2) {
         this.highlightInRangeDayList();
       }
@@ -251,6 +243,8 @@ export class SolarCalendarElement extends CalendarBaseElement {
 
     const currentDate = event.currentTarget?.['date'];
     if (!currentDate) return;
+
+    this._fire('date-change', currentDate);
 
     if (!this.rangePicker) {
       Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
@@ -481,10 +475,13 @@ export class SolarCalendarElement extends CalendarBaseElement {
 
   prevYear() {
     this._log('prevYear');
+
     this.calendarOnScreenDate[0] = this.calendarOnScreenDate[0] - 1;
     if (this.calendarOnScreenDate[0] <= this.minDateArray[0]) {
       this.calendarOnScreenDate[0] = this.minDateArray[0];
     }
+
+    this._fire('date-change', this.calendarOnScreenDate.join('/'));
     this.calculateCalendarWeekList();
   }
 
@@ -495,6 +492,8 @@ export class SolarCalendarElement extends CalendarBaseElement {
     if (this.calendarOnScreenDate[0] >= this.maxDateArray[0]) {
       this.calendarOnScreenDate[0] = this.maxDateArray[0];
     }
+
+    this._fire('date-change', this.calendarOnScreenDate.join('/'));
     this.calculateCalendarWeekList();
   }
 
@@ -593,16 +592,6 @@ export class SolarCalendarElement extends CalendarBaseElement {
       default:
         this._warn('Invalid view');
         break;
-    }
-  }
-
-  calculateAllDayOfCurrentMonthTimestamp() {
-    this._log('calculateAllDayOfCurrentMonthTimestamp');
-
-    for (const dayElement of Array.from(this.calendarDayElementList as HTMLDivElement[])) {
-      if (!dayElement['date']) continue;
-      const gregorian = this.convertToGregorian(dayElement['date'][0], dayElement['date'][1], dayElement['date'][2]);
-      dayElement['date'] = [...dayElement['date'], Date.parse(gregorian.join('-'))];
     }
   }
 }
