@@ -260,7 +260,7 @@ export class ClockElement extends BaseElement {
     this._fire('time-changed', {
       stringTime: `${addLeadingZero(this.timeArray[0])}:${addLeadingZero(this.timeArray[1])}:${addLeadingZero(this.timeArray[2])}`,
       arrayTime: this.timeArray
-    });
+    }, true);
   }
 
   protected onInput(event: KeyboardEvent) {
