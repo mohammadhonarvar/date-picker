@@ -23,6 +23,15 @@ export const baseStyle = css`
 `;
 
 export const calendarBaseStyle = css`
+  :host {
+    --primary-color: #A0144F;
+    --primary-background-color:  #A0144F23;
+
+    --primary-day-highlight-color: #c3c3c3;
+    --primary-selected-day-color: rgba(255, 255, 255, 0.87);
+    --primary-day-box-color: #c3c3c3;
+  }
+
   .views-container {
     padding: 0 8px 16px;
     position: relative;
@@ -75,8 +84,8 @@ export const calendarBaseStyle = css`
   }
 
   .calendar-row .current-date-highlight {
-    color: #A0144F;
-    background-color: #A0144F23;
+    color: var(--primary-color);
+    background-color: var(--primary-background-color);
   }
 
   .calendar-row .selected-day {
