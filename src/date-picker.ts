@@ -77,7 +77,9 @@ export class DatePicker extends BaseElement {
             date="${this.initialDate}"
             ?range-picker="${this.rangePicker}"
             ?time-picker="${this.timePicker}"
-            .selectedDate="${this.selectedDateList}"
+            .selectedDateList="${this.selectedDateList}"
+            @date-changed="${(event: CustomEvent) => { this._log('current date is: %s', event.detail); }}"
+            @time-changed="${(event: CustomEvent) => { event.stopPropagation(); this._log('current time is: %o', event.detail); }}"
           >
           </solar-calendar-element>`
         : html`
@@ -86,7 +88,9 @@ export class DatePicker extends BaseElement {
             date="${this.initialDate}"
             ?range-picker="${this.rangePicker}"
             ?time-picker="${this.timePicker}"
-            .selectedDate="${this.selectedDateList}"
+            .selectedDateList="${this.selectedDateList}"
+            @date-changed="${(event: CustomEvent) => { this._log('current date is: %s', event.detail); }}"
+            @time-changed="${(event: CustomEvent) => { event.stopPropagation(); this._log('current time is: %o', event.detail); }}"
           >
           </gregorian-calendar-element>`
       }
