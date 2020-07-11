@@ -527,6 +527,8 @@ export class SolarCalendarElement extends CalendarBaseElement {
     this._fire('current-month-changed', this.calendarOnScreenDate[1], true);
     this._fire('current-year-changed', this.calendarOnScreenDate[0], true);
     this.requestUpdate();
+    //FIXME: entering invalid chars
+    Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
   }
 
   private onMonthChangedTo(event: CustomEvent) {

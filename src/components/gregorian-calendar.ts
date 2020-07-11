@@ -47,7 +47,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   protected calendarInitDate: number[] = [];
   protected calendarActiveDate: number[] = [];
   protected calendarOnScreenDate: number[] = [];
-  protected selectedDayList: number[] = [];
+  protected selectedDay: number[] = [];
   protected calendarWeekList: number[][] = [];
   protected leapMonthIndex: number = 1;
   protected weekDayList = weekDayList;
@@ -264,6 +264,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     if (!this.rangePicker) {
       Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
       (event.currentTarget as HTMLDivElement).setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87);');
+      this.selectedDay = currentDate;
     }
     else {
       this.selectedDateList.push(currentDate);
@@ -512,6 +513,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     this._fire('current-month-changed', this.calendarOnScreenDate[1], true);
     this._fire('current-year-changed', this.calendarOnScreenDate[0], true);
     this.requestUpdate();
+    //FIXME: it is temporary
+    Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style') });
   }
 
   private onMonthChangedTo(event: CustomEvent) {
