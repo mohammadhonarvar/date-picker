@@ -139,7 +139,7 @@ export class ClockElement extends BaseElement {
           value="${addLeadingZero(this.timeArray[0])}"
           @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
           @blur="${this.onInputBlur}"
-          @keyup="${this.onKeyup}"
+          @keydown="${this.onKeydown}"
           @input="${this.onInput}"
         /> :
         <input
@@ -149,7 +149,7 @@ export class ClockElement extends BaseElement {
           value="${addLeadingZero(this.timeArray[1])}"
           @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
           @blur="${this.onInputBlur}"
-          @keyup="${this.onKeyup}"
+          @keydown="${this.onKeydown}"
           @input="${this.onInput}"
         />
         ${this.timeArray.length === 3
@@ -161,7 +161,7 @@ export class ClockElement extends BaseElement {
                 value="${addLeadingZero(this.timeArray[2])}"
                 @focus="${(event: Event) => { (event.target as HTMLInputElement).setAttribute('focused', '') }}"
                 @blur="${this.onInputBlur}"
-                @keyup="${this.onKeyup}"
+                @keydown="${this.onKeydown}"
                 @input="${this.onInput}"
               />
             `
@@ -220,8 +220,8 @@ export class ClockElement extends BaseElement {
     }
   };
 
-  protected onKeyup(event: KeyboardEvent) {
-    this._log('onKeyup');
+  protected onKeydown(event: KeyboardEvent) {
+    this._log('onKeydown');
 
     if (
       !(
