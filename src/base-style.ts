@@ -1,35 +1,52 @@
 import { css } from "lit-element";
 // import { appConfig } from './config';
 
-export const baseStyle = css`
-  body {
-    margin: 0;
-    /* background-color: #A282D4; */
-    /* background-color: #78BB7B; */
-    background-color: #A0144F;
-    font-family: "open Sans", "Tahoma";
-  }
+// export const baseStyle = css`
+//   body {
+//     margin: 0;
+//     background-color: rgb(98, 0, 238);
+//     font-family: "open Sans", "Tahoma";
+//   }
 
-  p {
-    margin: 0;
-  }
+//   p {
+//     margin: 0;
+//   }
 
-  .app {
-    margin: 100px auto;
-    width: 320px;
-  }
+//   .app {
+//     margin: 100px auto;
+//     width: 320px;
+//   }
 
 
-`;
+// `;
 
 export const calendarBaseStyle = css`
   :host {
-    --primary-color: #A0144F;
-    --primary-background-color:  #A0144F23;
+    /*A0144F*/
+    --theme-primary-color: var(--primary-color, 98, 0, 238);
+    --theme-primary-variant-color: var(--primary-variant-color, 55, 0, 179);
 
-    --primary-day-highlight-color: #c3c3c3;
-    --primary-selected-day-color: rgba(255, 255, 255, 0.87);
-    --primary-day-box-color: #c3c3c3;
+    --theme-accent-color: var(--accent-color, 3, 218, 198);
+    --theme-accent-variant-color: var(--accent-variant-color, 1, 135, 134);
+
+    --theme-background-color:var(--background-color, 255, 255, 255);
+    --theme-surface-color:var(--surface-color, 255, 255, 255);
+
+    --theme-error-color:var(--error-color, 176, 0 ,32);
+
+    /*
+    Help:
+    Material Typography Color System
+    #FFFFFFDE -> FFFFFF %87
+    #FFFFFF99 -> FFFFFF %60
+    #FFFFFF61 -> FFFFFF %38
+    */
+
+    --theme-on-primary-color: var(--on-primary-color, 255, 255, 255);
+    --theme-on-accent-color: var(--on-accent-color, 0, 0, 0);
+    --theme-on-background-color: var(--on-background-color, 0, 0, 0);
+    --theme-on-surface-color: var(--on-surface-color, 0, 0, 0);
+    --theme-on-error-color: var(--on-error-color, 255, 255, 255);
   }
 
   .views-container {
@@ -78,23 +95,23 @@ export const calendarBaseStyle = css`
   }
 
   .calendar-row .calendar-day {
-    color: rgba(0, 0, 0, 0.87);
+    color: rgba(var(--theme-on-background-color) 0.87);
     cursor: pointer;
     border-radius: 50%;
   }
 
   .calendar-row .current-date-highlight {
-    color: var(--primary-color);
-    background-color: var(--primary-background-color);
+    color: rgb(var(--theme-accent-color));
+    background-color: rgba(var(--theme-accent-variant-color), 0.09);
   }
 
   .calendar-row .selected-day {
-    background: #A0144F;
-    color: rgba(255, 255, 255, 0.87);
+    color: rgba(var(--theme-on-primary-color), 0.87);
+    background: rgb(var(--theme-primary-color));
   }
 
   .calendar-row .in-range-day {
-    background: #A0144F23;
+    background: rgb(var(--theme-primary-variant-color));
     border-radius: 0;
   }
 
@@ -122,7 +139,7 @@ export const calendarBaseStyle = css`
   .goto-time-view {
     height: 42px;
     border-radius: 8px;
-    background: #FFFFFF;
+    background: var(--theme-background-color);
     margin-top: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     cursor: pointer;

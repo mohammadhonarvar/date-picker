@@ -34,13 +34,13 @@ export class DecadeList extends BaseElement {
     }
 
     .decade-button:hover {
-      background-color: #A0144F23;
-      color: rgba(0, 0, 0, 0.60);
+      background-color: rgba(var(--theme-primary-color) ,0.09);
+      color: rgba(var(--theme-on-background-color), 0.60);
     }
 
     [active] {
-      background-color: #A0144F;
-      color: rgba(255, 255, 255, 0.87);
+      background-color: rgb(var(--theme-primary-color));
+      color: rgba(var(--theme-on-primary-color), 0.87);
     }
   `;
 
@@ -94,7 +94,7 @@ export class DecadeList extends BaseElement {
     if (targeIndex === 0) {
       return html`
         ${(this.decadeList as number[][]).slice(0, 3).map(decade => {
-          return html`
+        return html`
             <div
               class="decade-button"
               ?active="${decade[0] === decadeStart}"
@@ -103,14 +103,14 @@ export class DecadeList extends BaseElement {
               <div>${decade[0]}-${decade[1]}</div>
             </div>
             `
-          })
+      })
         }`;
     }
 
     if (targeIndex === this.decadeList.length - 1) {
       return html`
         ${(this.decadeList as number[][]).slice(this.decadeList.length - 3).map(decade => {
-          return html`
+        return html`
             <div
               class="decade-button"
               ?active="${decade[0] === decadeStart || decade[1] === this.maxYear}"
@@ -119,13 +119,13 @@ export class DecadeList extends BaseElement {
               <div>${decade[0]}-${decade[1]}</div>
             </div>
             `
-          })
+      })
         }`;
     }
 
     return html`
       ${(this.decadeList as number[][]).slice(targeIndex - 1, targeIndex + 2).map(decade => {
-        return html`
+      return html`
           <div
             class="decade-button"
             ?active="${decade[0] === decadeStart}"
@@ -134,7 +134,7 @@ export class DecadeList extends BaseElement {
             <div>${decade[0]}-${decade[1]}</div>
           </div>
           `
-        })
+    })
       }`;
   }
 

@@ -52,7 +52,16 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   protected leapMonthIndex: number = 1;
   protected weekDayList = weekDayList;
 
-  static styles = [calendarBaseStyle, css``];
+  static styles = [
+    calendarBaseStyle,
+    css`
+      .container {
+        background-color: rgb(var(--theme-background-color));
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+    `,
+  ];
 
   constructor() {
     super();
@@ -113,73 +122,75 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     const today = this.ifActiveDateExist() ? this.calendarInitDate[2] : -1;
 
     return html`
-      <header-element
-        ?hidden="${this.activeView === 'clock'}"
-        @prev-month="${this.prevMonth}"
-        @next-month="${this.nextMonth}"
-        @prev-year="${this.prevYear}"
-        @next-year="${this.nextYear}"
-        @prev-decade="${this.prevDecade}"
-        @next-decade="${this.nextDecade}"
-        @show-month-list="${() => { this.activeView = 'monthList' }}"
-        @show-year-list="${() => { this.activeView = 'yearList' }}"
-        @show-decade-list="${() => { this.activeView = 'decadeList' }}"
-        debug
-      >
-      </header-element>
-      <div class="views-container">
-        <div class="view" ?hidden="${this.activeView !== 'calendar'}">
-          <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
-          ${this.calendarWeekList.map((week: number[], index: number) => {
-            return html`
-              <div class="calendar-row">
-                ${week.map((day: number) => {
-                  return this.getWeekDaysTemplate(day, index, today);
-                })}
-              </div>
-              `
-            })
-          }
+      <div class="container">
+        <header-element
+          ?hidden="${this.activeView === 'clock'}"
+          @prev-month="${this.prevMonth}"
+          @next-month="${this.nextMonth}"
+          @prev-year="${this.prevYear}"
+          @next-year="${this.nextYear}"
+          @prev-decade="${this.prevDecade}"
+          @next-decade="${this.nextDecade}"
+          @show-month-list="${() => { this.activeView = 'monthList' }}"
+          @show-year-list="${() => { this.activeView = 'yearList' }}"
+          @show-decade-list="${() => { this.activeView = 'decadeList' }}"
+          debug
+        >
+        </header-element>
+        <div class="views-container">
+          <div class="view" ?hidden="${this.activeView !== 'calendar'}">
+            <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
+            ${this.calendarWeekList.map((week: number[], index: number) => {
+      return html`
+                <div class="calendar-row">
+                  ${week.map((day: number) => {
+        return this.getWeekDaysTemplate(day, index, today);
+      })}
+                </div>
+                `
+    })
+      }
+          </div>
+          <month-list
+            class="view"
+            ?hidden="${this.activeView !== 'monthList'}"
+            .monthList="${this.monthList}"
+            @month-changed-to="${this.onMonthChangedTo}"
+            debug
+          >
+          </month-list>
+          <year-list
+            class="view"
+            ?hidden="${this.activeView !== 'yearList'}"
+            .currentYear="${this.calendarOnScreenDate[0]}"
+            .minYear="${this.minDateArray[0]}"
+            .maxYear="${this.maxDateArray[0]}"
+            @year-changed-to="${this.onYearChangedTo}"
+            debug
+          >
+          </year-list>
+          <decade-list
+            class="view"
+            ?hidden="${this.activeView !== 'decadeList'}"
+            .currentYear="${this.calendarOnScreenDate[0]}"
+            .minYear="${this.minDateArray[0]}"
+            .maxYear="${this.maxDateArray[0]}"
+            @decade-changed-to="${this.onDedcadeChangedTo}"
+            @decade-changed="${this.decadeChanged}"
+            debug
+          >
+          </decade-list>
+          <clock-element
+            debug
+            ?hidden="${this.activeView !== 'clock'}"
+          >
+          </clock-element>
         </div>
-        <month-list
-          class="view"
-          ?hidden="${this.activeView !== 'monthList'}"
-          .monthList="${this.monthList}"
-          @month-changed-to="${this.onMonthChangedTo}"
-          debug
-        >
-        </month-list>
-        <year-list
-          class="view"
-          ?hidden="${this.activeView !== 'yearList'}"
-          .currentYear="${this.calendarOnScreenDate[0]}"
-          .minYear="${this.minDateArray[0]}"
-          .maxYear="${this.maxDateArray[0]}"
-          @year-changed-to="${this.onYearChangedTo}"
-          debug
-        >
-        </year-list>
-        <decade-list
-          class="view"
-          ?hidden="${this.activeView !== 'decadeList'}"
-          .currentYear="${this.calendarOnScreenDate[0]}"
-          .minYear="${this.minDateArray[0]}"
-          .maxYear="${this.maxDateArray[0]}"
-          @decade-changed-to="${this.onDedcadeChangedTo}"
-          @decade-changed="${this.decadeChanged}"
-          debug
-        >
-        </decade-list>
-        <clock-element
-          debug
-          ?hidden="${this.activeView !== 'clock'}"
-        >
-        </clock-element>
       </div>
       ${
-        this.timePicker
+      this.timePicker
         ? html`
-            <div class="goto-time-view" @click="${() => { this.activeView === 'clock' ? this.activeView = 'calendar' : this.activeView = 'clock'}}">
+            <div class="container goto-time-view" @click="${() => { this.activeView === 'clock' ? this.activeView = 'calendar' : this.activeView = 'clock' }}">
               ${this.activeView === 'clock' ? arrowBackward : clock}
             </div>
           `
@@ -277,8 +288,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     calendarDayElementListArray.map(dayElement => { dayElement.removeAttribute('style'); });
 
     if (this.selectedDateList[0][0] > this.selectedDateList[1][0] ||
-        (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] > this.selectedDateList[1][1]) ||
-        (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] === this.selectedDateList[1][1] &&  this.selectedDateList[0][2] > this.selectedDateList[1][2])
+      (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] > this.selectedDateList[1][1]) ||
+      (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] === this.selectedDateList[1][1] && this.selectedDateList[0][2] > this.selectedDateList[1][2])
     ) {
       this.selectedDateList.reverse();
     }
@@ -294,15 +305,15 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   private checkEdgeSelectedDate(dayElement: HTMLDivElement) {
     this._log('checkEdgeSelectedDate');
     if (this.selectedDateList[0][0] === dayElement['date'][0] &&
-        this.selectedDateList[0][1] === dayElement['date'][1] &&
-        this.selectedDateList[0][2] === dayElement['date'][2]
-      ) {
+      this.selectedDateList[0][1] === dayElement['date'][1] &&
+      this.selectedDateList[0][2] === dayElement['date'][2]
+    ) {
       dayElement.setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87); transition: ease-in 0.15s; border-radius: 50% 0 0 50%;');
     }
 
     if (this.selectedDateList[1][0] === dayElement['date'][0] &&
-        this.selectedDateList[1][1] === dayElement['date'][1] &&
-        this.selectedDateList[1][2] === dayElement['date'][2]
+      this.selectedDateList[1][1] === dayElement['date'][1] &&
+      this.selectedDateList[1][2] === dayElement['date'][2]
     ) {
       dayElement.setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87); transition: ease-in 0.15s;  border-radius: 0 50% 50% 0;');
     }
@@ -311,9 +322,9 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   private isInRange(dayDate: number[]) {
     // this._log('ifIsInRange');
     return (
-        (this.selectedDateList[0][0] <= dayDate[0] && this.selectedDateList[0][1] < dayDate[1]) ||
-        (this.selectedDateList[0][1] === dayDate[1] && this.selectedDateList[0][2] < dayDate[2])
-      ) &&
+      (this.selectedDateList[0][0] <= dayDate[0] && this.selectedDateList[0][1] < dayDate[1]) ||
+      (this.selectedDateList[0][1] === dayDate[1] && this.selectedDateList[0][2] < dayDate[2])
+    ) &&
       (
         (this.selectedDateList[1][0] >= dayDate[0] && this.selectedDateList[1][1] > dayDate[1]) ||
         (this.selectedDateList[1][1] === dayDate[1] && this.selectedDateList[1][2] > dayDate[2])
@@ -522,7 +533,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   private decadeChanged(event: CustomEvent) {
     this._log('decadeChanged');
 
-    if ( !(this.headerElement && ['yearList', 'decadeList'].includes(this.activeView)) ) return;
+    if (!(this.headerElement && ['yearList', 'decadeList'].includes(this.activeView))) return;
 
     this.headerElement.title = `${event.detail[0]}-${event.detail[1]}`;
   }

@@ -25,7 +25,7 @@ export class HeaderElement extends BaseElement {
    p {
       font-weight: 500;
       cursor: pointer;
-      color: rgba(0, 0, 0, 0.87);
+      color: rgba(var(--theme-on-background-color), 0.87);
       align-self: stretch;
       display: flex;
       align-items: center;
@@ -40,10 +40,10 @@ export class HeaderElement extends BaseElement {
       justify-content: center;
       align-items: center;
       border-radius: 50%;
-      fill: #A0144F;
+      fill: rgb(var(--theme-primary-color));
       cursor: pointer;
       padding: 6px;
-      background-color: #A0144F23;
+      background-color: rgba(var(--theme-primary-color), 0.09);
     }
 
     [hidden] {

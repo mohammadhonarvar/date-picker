@@ -23,25 +23,23 @@ export class WeekLabelList extends BaseElement {
       margin-bottom: 8px;
       font-weight: 500;
       font-size: 0.85em;
-      color: rgba(0, 0, 0, 0.38);
+      color: rgba(var(--theme-on-background-color), 0.38);
     }
 
-    .calendar-day{
-      /* background-color: tomato; */
-      /* margin: 2px; */
+    .week-day {
       font-weight: 500;
       flex: 1 0 auto;
       position: relative;
     }
 
-    .calendar-day::after{
+    .week-day::after {
       content: "";
       float:left;
       display: block;
       padding-top: 100%;
     }
 
-    .calendar-day-data {
+    .week-day-data {
       position: absolute;
       left: 0;
       right: 0;
@@ -50,20 +48,6 @@ export class WeekLabelList extends BaseElement {
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .calendar-day-data[data-range-edge="true"],
-    .calendar-day-data[data-start-range-edge] {
-      transition: ease-in 0.15s;
-    }
-
-    .calendar-day-data[data-range-edge="true"] {
-      border-radius: 0 50% 50% 0;
-      background: #A0144F23;
-    }
-
-    .calendar-day-data[data-start-range-edge] {
-      border-radius: 50% 0 0 50%;
     }
 
   `;
@@ -79,8 +63,8 @@ export class WeekLabelList extends BaseElement {
     return html`
       ${(this.weekLabelList as WeekLabelInterface[]).map((week: WeekLabelInterface) => {
       return html`
-          <div class="calendar-day">
-            <div class="calendar-day-data">${this.useShortName ? week.shortName : week.name}</div>
+          <div class="week-day">
+            <div class="week-day-data">${this.useShortName ? week.shortName : week.name}</div>
           </div>
         `
     })

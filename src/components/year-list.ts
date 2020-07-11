@@ -36,13 +36,13 @@ export class YearList extends BaseElement {
     }
 
     .year-button:hover {
-      background-color: #A0144F23;
-      color: rgba(0, 0, 0, 0.60);
+      background-color: rgba(var(--theme-primary-color) ,0.09);
+      color: rgba(var(--theme-on-background-color), 0.60);
     }
 
     [active] {
-      background-color: #A0144F;
-      color: rgba(255, 255, 255, 0.87);
+      background-color: rgb(var(--theme-primary-color));
+      color: rgba(var(--theme-on-primary-color), 0.87);
     }
   `;
 
@@ -86,7 +86,7 @@ export class YearList extends BaseElement {
 
     return html`
       ${(this.yearList as number[]).map(year => {
-        return html`
+      return html`
           <div
             class="year-button"
             ?active="${this.activeYear === year}"
@@ -95,8 +95,8 @@ export class YearList extends BaseElement {
             <div>${year}</div>
           </div>
         `
-      })
-    }`;
+    })
+      }`;
   }
 
   private onCurrentYearChanged(event: Event | CustomEvent) {

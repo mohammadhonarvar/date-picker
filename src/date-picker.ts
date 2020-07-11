@@ -14,10 +14,10 @@ export class DatePicker extends BaseElement {
   @property({ type: Boolean })
   solar: boolean = false;
 
-  @property({ type: Boolean, attribute:'range-picker' })
+  @property({ type: Boolean, attribute: 'range-picker' })
   rangePicker: boolean = false;
 
-  @property({ type: Boolean, attribute:'time-picker' })
+  @property({ type: Boolean, attribute: 'time-picker' })
   timePicker: boolean = false;
 
   @property({ type: String, attribute: 'date' })
@@ -42,13 +42,8 @@ export class DatePicker extends BaseElement {
   static styles = css`
     :host {
       display: block;
-      margin: 0 auto;
-      background-color: var(--theme-background, #ffffff);
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       user-select: none;
       overflow: hidden;
-      /* padding: 0 8px 16px; */
     }
   `;
 

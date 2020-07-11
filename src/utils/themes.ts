@@ -13,16 +13,16 @@ export const appConfig = {
 // This is the base theme & shared styles(for example)
 export const styleConfig = css`
   :host {
-    --primary-color: #512DA8;
+    --theme-primary-color: #512DA8;
     --dark-primary-color: #B39DDB;
-    --accent-color: #9FA8DA;
+    --theme-accent-color: #9FA8DA;
     --dark-accent-color: #E91E63;
 
     --primary-text-color: rgba(0, 0, 0, 0.87);
     --dark-primary-text-color: rgba(255, 255, 255, 0.87);
 
 
-    --background-color: #ffffff;
+    --theme-background-color: #ffffff;
     --dark-background-color: #121212;
 
     --font-family: "Iran Sans", "Open Sans", "Tahoma", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
