@@ -60,6 +60,30 @@ export class GregorianCalendarElement extends CalendarBaseElement {
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       }
+
+      .calendar-row .selected-date {
+        background: rgb(var(--theme-primary-color));
+        color: rgba(var(--theme-on-primary-color), 0.87);
+      }
+
+      .calendar-row .range-edge-day {
+        background: rgb(var(--theme-primary-color));
+        color: rgba(var(--theme-on-primary-color), 0.87);
+        transition: ease-in 0.15s;
+      }
+
+      .calendar-row .range-edge-day-start {
+        border-radius: 50% 0 0 50%;
+      }
+
+      .calendar-row .range-edge-day-end {
+        border-radius: 0 50% 50% 0;
+      }
+
+      .calendar-row .in-range-date-highlight {
+        background: rgba(var(--theme-primary-color),0.09); border-radius: 0;
+      }
+
     `,
   ];
 
@@ -228,7 +252,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
         this.highlightInRangeDayList();
       }
       else {
-        Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
+        Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.classList.remove('in-range-date-highlight'); });
       }
     }
   }
@@ -261,22 +285,22 @@ export class GregorianCalendarElement extends CalendarBaseElement {
 
     this._fire('date-changed', (currentDate as []).join('-'));
 
+
     if (!this.rangePicker) {
-      Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
-      (event.currentTarget as HTMLDivElement).setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87);');
+      Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.classList.remove('selected-date'); });
+      (event.currentTarget as HTMLDivElement).classList.add('selected-date');
       this.selectedDay = currentDate;
     }
     else {
       this.selectedDateList.push(currentDate);
-      (event.currentTarget as HTMLDivElement).setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87);');
-
+      (event.currentTarget as HTMLDivElement).classList.add('selected-date');
       if (this.selectedDateList.length === 2) {
         this.selectedDateList = [...this.selectedDateList];
         this._log('onDayClick: %o', this.selectedDateList);
       }
 
       if (this.selectedDateList.length > 2) {
-        Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style'); });
+        Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.classList.remove('selected-date', 'range-edge-day', 'range-edge-day-start', 'range-edge-day-end'); });
         this.selectedDateList = [];
       }
     }
@@ -286,7 +310,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     this._log('highlightInRangeDayList');
 
     const calendarDayElementListArray = Array.from(this.calendarDayElementList as HTMLDivElement[]);
-    calendarDayElementListArray.map(dayElement => { dayElement.removeAttribute('style'); });
+    calendarDayElementListArray.map(dayElement => { dayElement.classList.remove('in-range-date-highlight'); });
 
     if (this.selectedDateList[0][0] > this.selectedDateList[1][0] ||
       (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] > this.selectedDateList[1][1]) ||
@@ -299,25 +323,30 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       if (!dayElement['date']) continue;
       this.checkEdgeSelectedDate(dayElement);
       if (!this.isInRange(dayElement['date'])) continue;
-      dayElement.setAttribute('style', 'background: #A0144F23; border-radius: 0;');
+      dayElement.classList.add('in-range-date-highlight');
     }
+  }
+
+  private isEdgeSelectedDate(index: number, date: Array<number>) {
+    return this.selectedDateList[index][0] === date[0] &&
+      this.selectedDateList[index][1] === date[1] &&
+      this.selectedDateList[index][2] === date[2];
   }
 
   private checkEdgeSelectedDate(dayElement: HTMLDivElement) {
     this._log('checkEdgeSelectedDate');
-    if (this.selectedDateList[0][0] === dayElement['date'][0] &&
-      this.selectedDateList[0][1] === dayElement['date'][1] &&
-      this.selectedDateList[0][2] === dayElement['date'][2]
-    ) {
-      dayElement.setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87); transition: ease-in 0.15s; border-radius: 50% 0 0 50%;');
-    }
 
-    if (this.selectedDateList[1][0] === dayElement['date'][0] &&
-      this.selectedDateList[1][1] === dayElement['date'][1] &&
-      this.selectedDateList[1][2] === dayElement['date'][2]
-    ) {
-      dayElement.setAttribute('style', 'background: #A0144F; color: rgba(255, 255, 255, 0.87); transition: ease-in 0.15s;  border-radius: 0 50% 50% 0;');
-    }
+    let rangeStartEdge = this.isEdgeSelectedDate(0, dayElement['date']);
+    let rangeEndEdge = this.isEdgeSelectedDate(1, dayElement['date']);
+
+    if (rangeStartEdge && rangeEndEdge) return;
+
+    if (rangeStartEdge)
+      dayElement.classList.add('range-edge-day', 'range-edge-day-start');
+
+    else if (rangeEndEdge)
+      dayElement.classList.add('range-edge-day', 'range-edge-day-end');
+
   }
 
   private isInRange(dayDate: number[]) {
