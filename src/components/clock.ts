@@ -208,12 +208,13 @@ export class ClockElement extends BaseElement {
     const inputValue = event.target?.['value'] as string;
     const inputName = event.target?.['name'];
 
-    if (!this.validClockInput(inputName, inputValue + event.key)) {
-      event.preventDefault();
+    const changeFactor = (event.keyCode === 38) ? 1 : ((event.keyCode === 40) ? -1 : 0);
+
+    if (changeFactor === 0 && !this.validClockInput(inputName, inputValue + event.key)) {
+      if (event.keyCode !== 8)
+        event.preventDefault();
       return;
     }
-
-    const changeFactor = (event.keyCode === 38) ? 1 : ((event.keyCode === 40) ? -1 : 0);
 
     if (changeFactor === 0) return;
 
