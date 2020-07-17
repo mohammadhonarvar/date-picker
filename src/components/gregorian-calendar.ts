@@ -1,5 +1,7 @@
 import { html, customElement, TemplateResult, property, query, css, queryAll } from 'lit-element';
 
+import { classMap } from 'lit-html/directives/class-map.js';
+
 import CalendarBaseElement from './calendar-base';
 import { calendarBaseStyle } from '../base-style';
 import './month-list';
@@ -47,7 +49,6 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   protected calendarInitDate: number[] = [];
   protected calendarActiveDate: number[] = [];
   protected calendarOnScreenDate: number[] = [];
-  protected selectedDay: number[] = [];
   protected calendarWeekList: number[][] = [];
   protected leapMonthIndex: number = 1;
   protected weekDayList = weekDayList;
@@ -83,7 +84,6 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       .calendar-row .in-range-date-highlight {
         background: rgba(var(--theme-primary-color),0.09); border-radius: 0;
       }
-
     `,
   ];
 
@@ -103,14 +103,6 @@ export class GregorianCalendarElement extends CalendarBaseElement {
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
     this._log('update');
-
-    // Prevent re-rendering when shortWeekLabel is changed
-    if (changedProperties.has('shortWeekLabel') && !this.shortWeekLabel) {
-      if (this.weekLabelsElement) {
-        this.weekLabelsElement.removeAttribute('short-name');
-        return;
-      }
-    }
 
     // Create array of initDate when it's changed
     if (changedProperties.has('initDate')) {
@@ -165,15 +157,15 @@ export class GregorianCalendarElement extends CalendarBaseElement {
           <div class="view" ?hidden="${this.activeView !== 'calendar'}">
             <week-labels .weekLabelList="${this.weekDayList}"></week-labels>
             ${this.calendarWeekList.map((week: number[], index: number) => {
-      return html`
+              return html`
                 <div class="calendar-row">
                   ${week.map((day: number) => {
-        return this.getWeekDaysTemplate(day, index, today);
-      })}
+                return this.getWeekDaysTemplate(day, index, today);
+              })}
                 </div>
                 `
-    })
-      }
+            })
+          }
           </div>
           <month-list
             class="view"
@@ -247,13 +239,9 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       }
     }
 
-    if (changedProperties.has('selectedDateList') || (changedProperties.has('rangePicker') && this.rangePicker)) {
-      if (this.selectedDateList.length === 2) {
-        this.highlightInRangeDayList();
-      }
-      else {
-        Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.classList.remove('in-range-date-highlight'); });
-      }
+    if (this.selectedDateList.length === 2) {
+      this.removeSomeClassFormDayElementList(['in-range-date-highlight', 'selected-date', 'range-edge-day', 'range-edge-day-start', 'range-edge-day-end']);
+      this.highlightInRangeDayList();
     }
   }
 
@@ -261,11 +249,20 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     // this._log('getCalendarWeekTemplate');
 
     const notForThisMonth = ((index === 0 && day > 7) || (index > 2 && day < 15));
-    // const selected = this.selectedDayList.includes(day) && (this.calendarOnScreenDate[1] === this.selectedDateList[0][1] || this.calendarOnScreenDate[1] === this.selectedDateList[1][1]);
-    // const edge = selected && props.selectedDate.length > 1;
+    const classList = {
+      'calendar-day': true,
+      'fade': ((index === 0 && day > 7) || (index > 2 && day < 15)),
+      'current-date-highlight': this.highlightToday && today === day,
+      'selected-date': !notForThisMonth &&
+                       this.selectedDateList[0] &&
+                       this.selectedDateList[0][2] === day &&
+                       this.calendarOnScreenDate[1] === this.selectedDateList[0][1] &&
+                       this.calendarOnScreenDate[0] === this.selectedDateList[0][0]
+    };
+
     return html`
       <div
-        class="calendar-day${(notForThisMonth ? ' fade' : (this.highlightToday && today === day) ? ' current-date-highlight' : '')}"
+        class="${classMap(classList)}"
         .date="${!notForThisMonth ? [this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], day] : undefined}"
         @click="${this.onDayClick}"
       >
@@ -285,11 +282,9 @@ export class GregorianCalendarElement extends CalendarBaseElement {
 
     this._fire('date-changed', (currentDate as []).join('-'));
 
-
     if (!this.rangePicker) {
-      Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.classList.remove('selected-date'); });
       (event.currentTarget as HTMLDivElement).classList.add('selected-date');
-      this.selectedDay = currentDate;
+      this.selectedDateList = [currentDate];
     }
     else {
       this.selectedDateList.push(currentDate);
@@ -300,7 +295,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       }
 
       if (this.selectedDateList.length > 2) {
-        Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.classList.remove('selected-date', 'range-edge-day', 'range-edge-day-start', 'range-edge-day-end'); });
+        this.removeSomeClassFormDayElementList(['in-range-date-highlight', 'selected-date', 'range-edge-day', 'range-edge-day-start', 'range-edge-day-end']);
         this.selectedDateList = [];
       }
     }
@@ -309,9 +304,6 @@ export class GregorianCalendarElement extends CalendarBaseElement {
   protected highlightInRangeDayList() {
     this._log('highlightInRangeDayList');
 
-    const calendarDayElementListArray = Array.from(this.calendarDayElementList as HTMLDivElement[]);
-    calendarDayElementListArray.map(dayElement => { dayElement.classList.remove('in-range-date-highlight'); });
-
     if (this.selectedDateList[0][0] > this.selectedDateList[1][0] ||
       (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] > this.selectedDateList[1][1]) ||
       (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] === this.selectedDateList[1][1] && this.selectedDateList[0][2] > this.selectedDateList[1][2])
@@ -319,6 +311,7 @@ export class GregorianCalendarElement extends CalendarBaseElement {
       this.selectedDateList.reverse();
     }
 
+    const calendarDayElementListArray = Array.from(this.calendarDayElementList as HTMLDivElement[]);
     for (const dayElement of calendarDayElementListArray) {
       if (!dayElement['date']) continue;
       this.checkEdgeSelectedDate(dayElement);
@@ -341,12 +334,12 @@ export class GregorianCalendarElement extends CalendarBaseElement {
 
     if (rangeStartEdge && rangeEndEdge) return;
 
-    if (rangeStartEdge)
+    if (rangeStartEdge) {
       dayElement.classList.add('range-edge-day', 'range-edge-day-start');
-
-    else if (rangeEndEdge)
+    }
+    else if (rangeEndEdge) {
       dayElement.classList.add('range-edge-day', 'range-edge-day-end');
-
+    }
   }
 
   private isInRange(dayDate: number[]) {
@@ -541,9 +534,8 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     this.calendarWeekList = this.calculateCalendar();
     this._fire('current-month-changed', this.calendarOnScreenDate[1], true);
     this._fire('current-year-changed', this.calendarOnScreenDate[0], true);
+    this.removeSomeClassFormDayElementList(['selected-date']);
     this.requestUpdate();
-    //FIXME: it is temporary
-    Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.removeAttribute('style') });
   }
 
   private onMonthChangedTo(event: CustomEvent) {
@@ -611,5 +603,10 @@ export class GregorianCalendarElement extends CalendarBaseElement {
         this._warn('Invalid view');
         break;
     }
+  }
+
+  private removeSomeClassFormDayElementList(classNameList: string[]) {
+    this._log('removeSomeClassFormDayElementList');
+    Array.from(this.calendarDayElementList as HTMLDivElement[]).map(dayElement => { dayElement.classList.remove(...classNameList) });
   }
 }
