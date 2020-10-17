@@ -1,5 +1,9 @@
 export const monthsDaysCount= [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
 
+export interface WeekDayInterface {
+  name: string;
+  shortName: string;
+}
 export const weekDayList = [
   { name: 'شنبه', shortName: 'ش' },
   { name: 'یک شنبه', shortName: 'ی' },
@@ -15,7 +19,6 @@ export interface MonthInterface {
   shortName: string;
   code: number;
 }
-
 export const monthList = [
   {name: 'فروردین', shortName: '', code: 0},
   {name: 'اردیبهشت', shortName: '', code: 3},

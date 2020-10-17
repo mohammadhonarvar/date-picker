@@ -51,16 +51,6 @@ export class HeaderElement extends BaseElement {
     }
   `;
 
-  disconnectedCallback() {
-    document.removeEventListener('date-changed', this.onDateChanged.bind(this));
-    super.disconnectedCallback();
-  }
-
-  constructor() {
-    super();
-    document.addEventListener('date-changed', this.onDateChanged.bind(this));
-  }
-
   protected render(): TemplateResult {
     this._log('render: %s', this.calendarActiveView);
 
@@ -73,15 +63,6 @@ export class HeaderElement extends BaseElement {
         ${arrowForward}
       </div>
     `;
-  }
-
-  private onDateChanged(event: Event | CustomEvent) {
-    this._log('onDateChanged');
-
-    event.stopPropagation();
-    if (!event['detail']) return;
-    const _event = event as CustomEvent;
-    this.title = _event.detail;
   }
 
   private onTitleClick() {

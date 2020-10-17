@@ -1,4 +1,5 @@
 import { html, css, customElement, TemplateResult, property } from 'lit-element';
+import { ifDefined } from 'lit-html/directives/if-defined';
 
 import { BaseElement } from './base-element';
 import './components/solar-calendar';
@@ -21,12 +22,10 @@ export class DatePicker extends BaseElement {
   timePicker: boolean = false;
 
   @property({ type: String, attribute: 'date' })
-  initialDate: string = this.solar ?
-    fixPersianNumber(new Date().toLocaleDateString('fa')) :
-    new Date().toLocaleDateString('en-CA');
+  initialDate?: string
 
   @property({ type: String, attribute: 'active-date' })
-  activeDate: string = this.initialDate;
+  activeDate?: string
 
   // must be sorted past[index: 0] -> future[index: 1]
   // 2D array -> [[2020, 2, 3]] || [[2020, 2, 3], [2020, 6, 1]] || []
@@ -36,8 +35,8 @@ export class DatePicker extends BaseElement {
   @property({ type: Array })
   selectedTime: number[] = [];
 
-  @property({ type: Array, attribute: false })
-  onScreenDate = this.initialDate;
+  @property({ type: String, attribute: false })
+  onScreenDate?: string
 
   static styles = css`
     :host {
@@ -53,6 +52,8 @@ export class DatePicker extends BaseElement {
     if (changedProperties.has('solar')) {
       if (this.solar) {
         this.initialDate = fixPersianNumber(new Date().toLocaleDateString('fa'));
+        this.onScreenDate = this.initialDate;
+        this.activeDate = this.initialDate;
       }
       else {
         this.initialDate = new Date().toLocaleDateString('en-CA');
@@ -69,23 +70,22 @@ export class DatePicker extends BaseElement {
         ? html`
           <solar-calendar-element
             debug
-            date="${this.initialDate}"
+            date="${ifDefined(this.initialDate)}"
             ?range-picker="${this.rangePicker}"
             ?time-picker="${this.timePicker}"
-            .selectedDateList="${this.selectedDateList}"
-            @date-changed="${(event: CustomEvent) => { this._log('current date is: %s', event.detail); }}"
-            @time-changed="${(event: CustomEvent) => { event.stopPropagation(); this._log('current time is: %o', event.detail); }}"
+            .selectedDateList=${this.selectedDateList}
+            @date-changed=${(event: CustomEvent) => { this._log('current date is: %s', event.detail); }}
+            @time-changed=${(event: CustomEvent) => { event.stopPropagation(); this._log('current time is: %o', event.detail); }}
           >
           </solar-calendar-element>`
         : html`
           <gregorian-calendar-element
-            debug
-            date="${this.initialDate}"
+            date="${ifDefined(this.initialDate)}"
             ?range-picker="${this.rangePicker}"
             ?time-picker="${this.timePicker}"
-            .selectedDateList="${this.selectedDateList}"
-            @date-changed="${(event: CustomEvent) => { this._log('current date is: %s', event.detail); }}"
-            @time-changed="${(event: CustomEvent) => { event.stopPropagation(); this._log('current time is: %o', event.detail); }}"
+            .selectedDateList=${this.selectedDateList}
+            @date-changed=${(event: CustomEvent) => { this._log('current date is: %s', event.detail); }}
+            @time-changed=${(event: CustomEvent) => { event.stopPropagation(); this._log('current time is: %o', event.detail); }}
           >
           </gregorian-calendar-element>`
       }

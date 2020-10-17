@@ -68,10 +68,10 @@ export class MonthList extends BaseElement {
           <div
             class="month-button"
             ?active="${this.activeMonthNumber === index + 1}"
-            @click="${() => {
-          this.activeMonthNumber = index + 1;
-          this._fire('month-changed-to', index + 1);
-        }}"
+            @click=${() => {
+              this.activeMonthNumber = index + 1;
+              this._fire('month-changed-to', index + 1);
+            }}
           >
             <div>${month.shortName ? month.shortName : month.name}</div>
           </div>
