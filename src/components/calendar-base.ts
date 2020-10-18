@@ -281,7 +281,10 @@ export default class CalendarBaseElement extends BaseElement {
 
     if (this.selectedDateList[0][0] > this.selectedDateList[1][0] ||
       (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] > this.selectedDateList[1][1]) ||
-      (this.selectedDateList[0][0] === this.selectedDateList[1][0] && this.selectedDateList[0][1] === this.selectedDateList[1][1] && this.selectedDateList[0][2] > this.selectedDateList[1][2])
+      (this.selectedDateList[0][0] === this.selectedDateList[1][0] &&
+        this.selectedDateList[0][1] === this.selectedDateList[1][1] &&
+        this.selectedDateList[0][2] > this.selectedDateList[1][2]
+      )
     ) {
       this.selectedDateList.reverse();
     }
@@ -510,7 +513,4 @@ export default class CalendarBaseElement extends BaseElement {
         break;
     }
   }
-
-  // protected abstract calculateCalendar(): {};
-  // protected abstract leapYearCalculation(param?: unknown): {};
 }
