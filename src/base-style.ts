@@ -17,7 +17,6 @@ import { css } from "lit-element";
 //     width: 320px;
 //   }
 
-
 // `;
 
 export const calendarBaseStyle = css`
@@ -29,10 +28,10 @@ export const calendarBaseStyle = css`
     --theme-accent-color: var(--accent-color, 3, 218, 198);
     --theme-accent-variant-color: var(--accent-variant-color, 1, 135, 134);
 
-    --theme-background-color:var(--background-color, 255, 255, 255);
-    --theme-surface-color:var(--surface-color, 255, 255, 255);
+    --theme-background-color: var(--background-color, 255, 255, 255);
+    --theme-surface-color: var(--surface-color, 255, 255, 255);
 
-    --theme-error-color:var(--error-color, 176, 0 ,32);
+    --theme-error-color: var(--error-color, 176, 0, 32);
 
     /*
     Help:
@@ -89,7 +88,7 @@ export const calendarBaseStyle = css`
 
   .calendar-row .calendar-day::after {
     content: "";
-    float:left;
+    float: left;
     display: block;
     padding-top: 100%;
   }
@@ -137,15 +136,13 @@ export const calendarBaseStyle = css`
   }
 
   .goto-time-view {
-    height: 42px;
-    border-radius: 8px;
-    background: var(--theme-background-color);
-    margin-top: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    padding: 10px 0;
+    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); */
+    border-top: 2px solid rgba(0, 0, 0, 0.09);
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    fill: rgba(0, 0, 0, 0.60);
+    fill: rgba(0, 0, 0, 0.6);
   }
 `;
