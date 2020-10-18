@@ -244,5 +244,4 @@ class DatePicker extends Component {
 
 }
 
-
 export default DatePicker;
