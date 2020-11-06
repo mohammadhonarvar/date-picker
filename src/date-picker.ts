@@ -102,7 +102,9 @@ export class DatePicker extends BaseElement {
               this._log('current time is: %o', event.detail);
             }}
           >
-          </gregorian-calendar-element>`}
+          </gregorian-calendar-element>
+        `
+      }
     `;
   }
 }

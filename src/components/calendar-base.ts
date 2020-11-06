@@ -338,7 +338,11 @@ export default class CalendarBaseElement extends BaseElement {
     let rangeStartEdge = this.isEdgeSelectedDate(0, dayElement['date']);
     let rangeEndEdge = this.isEdgeSelectedDate(1, dayElement['date']);
 
-    if (rangeStartEdge && rangeEndEdge) return;
+    // Example: [[1399, 7, 30], [1399, 7, 30]]
+    if (rangeStartEdge && rangeEndEdge) {
+      dayElement.classList.add('range-edge-day');
+      return;
+    }
 
     if (rangeStartEdge) {
       dayElement.classList.add('range-edge-day', 'range-edge-day-start');
@@ -369,9 +373,7 @@ export default class CalendarBaseElement extends BaseElement {
     );
   }
 
-  protected sortRangeSelectedDates(
-    selectedDates: number[][] | undefined
-  ): number[][] {
+  protected sortRangeSelectedDates(selectedDates: number[][] | undefined): number[][] {
     if (!selectedDates) return [];
     this._log('sortRangeSelectedDates');
 
