@@ -16,6 +16,7 @@ npm-debug.log*
 
 # Compiled
 /js
+/server
 # /build
 /dist
 /data/**/*.js
