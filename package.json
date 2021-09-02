@@ -10,11 +10,11 @@
     "build:ts": "tsc --build",
     "build:rollup": "yarn rollup -c",
     "s": "yarn serve",
-    "serve": "prpl-server --root build --host 0.0.0.0 --port 8080",
     "d": "npm-run-all --serial build:ts dev-server",
-    "dev-server": "es-dev-server --node-resolve --preserve-symlinks --app-index build/index.html  --compatibility none --open",
+    "built-serve": "es-dev-server --node-resolve --preserve-symlinks --app-index build/index.html  --compatibility none --open",
+    "development-serve": "es-dev-server --node-resolve --preserve-symlinks --app-index index.html  --compatibility none --open",
     "w": "yarn watch",
-    "watch": "npm-run-all --parallel \"dev-server --watch\" \"build:ts --watch --preserveWatchOutput\"",
+    "watch": "npm-run-all --parallel \"development-serve --watch\" \"build:ts --watch --preserveWatchOutput\"",
     "fu": "yarn full-upgrade"
   },
   "dependencies": {
