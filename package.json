@@ -9,7 +9,7 @@
     "build": "npm-run-all --serial clean build:ts build:rollup",
     "build:ts": "tsc --build",
     "build:rollup": "yarn rollup -c",
-    "s": "yarn serve",
+    "s": "yarn development-serve",
     "d": "npm-run-all --serial build:ts dev-server",
     "built-serve": "es-dev-server --node-resolve --preserve-symlinks --app-index build/index.html  --compatibility none --open",
     "development-serve": "es-dev-server --node-resolve --preserve-symlinks --app-index index.html  --compatibility none --open",
