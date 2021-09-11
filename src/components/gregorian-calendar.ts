@@ -165,28 +165,28 @@ export class GregorianCalendarElement extends CalendarBaseElement {
     this._log('prevMonth');
 
     super.prevMonth();
-    this._fire('date-changed', this.calendarOnScreenDate.join('-'));
+    this._fire('date-changed', this.calendarOnScreenDate.join('-'), true);
   }
 
   nextMonth() {
     this._log('nextMonth');
 
     super.nextMonth();
-    this._fire('date-changed', this.calendarOnScreenDate.join('-'));
+    this._fire('date-changed', this.calendarOnScreenDate.join('-'), true);
   }
 
   prevYear() {
     this._log('prevYear');
 
     super.prevYear()
-    this._fire('date-changed', this.calendarOnScreenDate.join('-'));
+    this._fire('date-changed', this.calendarOnScreenDate.join('-'), true);
   }
 
   nextYear() {
     this._log('nextYear');
 
     super.nextYear();
-    this._fire('date-changed', this.calendarOnScreenDate.join('-'));
+    this._fire('date-changed', this.calendarOnScreenDate.join('-'), true);
   }
 
   protected calculateCalendarWeekList() {

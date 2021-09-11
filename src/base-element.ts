@@ -4,7 +4,7 @@ export abstract class BaseElement extends LitElement {
   @property({ type: Boolean, reflect: true }) debug = false;
 
   protected async performUpdate() {
-    await new Promise ((resolve) => requestAnimationFrame(() => resolve()));
+    await new Promise<void> ((resolve) => requestAnimationFrame(() => resolve()));
     return super.performUpdate();
   }
 

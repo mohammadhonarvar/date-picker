@@ -277,7 +277,7 @@ export default class CalendarBaseElement extends BaseElement {
     const currentDate = event.currentTarget?.['date'];
     if (!currentDate) return;
 
-    this._fire('date-changed', (currentDate as []).join('-'));
+    this._fire('date-changed', (currentDate as []).join('-'), true);
 
     if (!this.rangePicker) {
       (event.currentTarget as HTMLDivElement).classList.add('selected-date');
