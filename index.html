@@ -45,7 +45,7 @@
   </head>
 
   <body>
-    <date-picker solar range-picker time-picker></date-picker>
+    <date-picker debug solar time-picker></date-picker>
     <!-- <clock-element debug></clock-element> -->
     <!-- https://polyfill.io/v3/url-builder/ -->
     <!-- <script src="https://polyfill.io/v3/polyfill.min.js?features=requestAnimationFrame,requestIdleCallback,scrollY,CustomEvent,document.querySelector,localStorage,fetch"></script> -->
@@ -54,6 +54,7 @@
 
     <script>
       // document.querySelector('date-picker').selectedDateList = [[2020, 7, 5], [2020, 7, 12]];
+      document.querySelector('date-picker').addEventListener('date-changed', (event) => { console.info(event.detail); });
     </script>
     <!-- <script type="module" src="js/components/clock.js"></script> -->
     <noscript>
