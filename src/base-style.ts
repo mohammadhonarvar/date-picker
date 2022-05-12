@@ -1,23 +1,4 @@
-import { css } from "lit-element";
-// import { appConfig } from './config';
-
-// export const baseStyle = css`
-//   body {
-//     margin: 0;
-//     background-color: rgb(98, 0, 238);
-//     font-family: "open Sans", "Tahoma";
-//   }
-
-//   p {
-//     margin: 0;
-//   }
-
-//   .app {
-//     margin: 100px auto;
-//     width: 320px;
-//   }
-
-// `;
+import { css } from "lit";
 
 export const calendarBaseStyle = css`
   :host {
@@ -79,8 +60,6 @@ export const calendarBaseStyle = css`
   }
 
   .calendar-row .calendar-day {
-    /* background-color: tomato; */
-    /* margin: 2px; */
     font-weight: 500;
     flex: 1 0 auto;
     position: relative;
@@ -137,7 +116,6 @@ export const calendarBaseStyle = css`
 
   .goto-time-view {
     padding: 10px 0;
-    /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); */
     border-top: 2px solid rgba(0, 0, 0, 0.09);
     cursor: pointer;
     display: flex;

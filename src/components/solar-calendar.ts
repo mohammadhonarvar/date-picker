@@ -1,20 +1,33 @@
-import { css, customElement } from 'lit-element';
+import { css } from "lit";
+import { customElement } from "lit/decorators.js";
 
-import CalendarBaseElement from './calendar-base';
-import { calendarBaseStyle } from '../base-style';
+import CalendarBaseElement from "./calendar-base";
+import { calendarBaseStyle } from "../base-style";
 
-import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
+import { convertStringToNumberArray } from "../utils/convert-string-to-number-array";
 
 // This class is based on gregorian, then we can use the following:
-import { weekDayList, monthsDaysCount, monthList } from '../data/solar';
+import { weekDayList, monthsDaysCount, monthList } from "../data/solar";
 
-@customElement('solar-calendar-element')
+@customElement("solar-calendar-element")
 export class SolarCalendarElement extends CalendarBaseElement {
   protected leapMonthIndex: number = 11;
 
   static styles = [
     calendarBaseStyle,
     css`
+      :host() {
+        direction: rtl;
+      }
+
+      week-labels {
+        direction: rtl;
+      }
+
+      .calendar-row {
+        direction: rtl;
+      }
+
       .container {
         background-color: rgb(var(--theme-background-color));
         border-radius: 8px;
@@ -33,15 +46,16 @@ export class SolarCalendarElement extends CalendarBaseElement {
       }
 
       .calendar-row .range-edge-day-start {
-        border-radius: 50% 0 0 50%;
-      }
-
-      .calendar-row .range-edge-day-end {
         border-radius: 0 50% 50% 0;
       }
 
+      .calendar-row .range-edge-day-end {
+        border-radius: 50% 0 0 50%;
+      }
+
       .calendar-row .in-range-date-highlight {
-        background: rgba(var(--theme-primary-color),0.09); border-radius: 0;
+        background: rgba(var(--theme-primary-color), 0.09);
+        border-radius: 0;
       }
     `,
   ];
@@ -49,12 +63,12 @@ export class SolarCalendarElement extends CalendarBaseElement {
   constructor() {
     super();
 
-    this.minDate = '1300/1/1';
-    this.maxDate = '1500/1/1';
+    this.minDate = "1300/1/1";
+    this.maxDate = "1500/1/1";
 
-    this.minDateArray = convertStringToNumberArray(this.minDate as string, '/');
+    this.minDateArray = convertStringToNumberArray(this.minDate as string, "/");
 
-    this.maxDateArray = convertStringToNumberArray(this.maxDate, '/');
+    this.maxDateArray = convertStringToNumberArray(this.maxDate, "/");
 
     this.monthList = monthList;
     this.monthsDaysCount = monthsDaysCount;
@@ -62,31 +76,46 @@ export class SolarCalendarElement extends CalendarBaseElement {
   }
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
-    this._log('update');
+    this._log("update");
 
-    if (changedProperties.has('minDate')) {
-      this.minDateArray = convertStringToNumberArray(this.minDate as string, '/');
+    if (changedProperties.has("minDate")) {
+      this.minDateArray = convertStringToNumberArray(
+        this.minDate as string,
+        "/"
+      );
     }
 
-    if (changedProperties.has('maxDate')) {
-      this.maxDateArray = convertStringToNumberArray(this.maxDate as string, '/');
+    if (changedProperties.has("maxDate")) {
+      this.maxDateArray = convertStringToNumberArray(
+        this.maxDate as string,
+        "/"
+      );
     }
 
     // Create array of initDate when it's changed
-    if (changedProperties.has('initDate')) {
-      const initDateArray = convertStringToNumberArray(this.initDate as string, '/');
+    if (changedProperties.has("initDate")) {
+      const initDateArray = convertStringToNumberArray(
+        this.initDate as string,
+        "/"
+      );
       if (
         initDateArray[0] > this.maxDateArray[0] ||
-        (initDateArray[0] === this.maxDateArray[0] && initDateArray[1] > this.maxDateArray[1]) ||
-        (initDateArray[0] === this.maxDateArray[0] && initDateArray[1] === this.maxDateArray[1] && initDateArray[2] > this.maxDateArray[2])
+        (initDateArray[0] === this.maxDateArray[0] &&
+          initDateArray[1] > this.maxDateArray[1]) ||
+        (initDateArray[0] === this.maxDateArray[0] &&
+          initDateArray[1] === this.maxDateArray[1] &&
+          initDateArray[2] > this.maxDateArray[2])
       ) {
         this.initDate = this.maxDate as string;
       }
 
       if (
         initDateArray[0] < this.minDateArray[0] ||
-        (initDateArray[0] === this.minDateArray[0] && initDateArray[1] < this.minDateArray[1]) ||
-        (initDateArray[0] === this.minDateArray[0] && initDateArray[1] === this.minDateArray[1] && initDateArray[2] < this.minDateArray[2])
+        (initDateArray[0] === this.minDateArray[0] &&
+          initDateArray[1] < this.minDateArray[1]) ||
+        (initDateArray[0] === this.minDateArray[0] &&
+          initDateArray[1] === this.minDateArray[1] &&
+          initDateArray[2] < this.minDateArray[2])
       ) {
         this.initDate = this.minDate as string;
       }
@@ -99,24 +128,31 @@ export class SolarCalendarElement extends CalendarBaseElement {
       this.calendarWeekList = this.calculateCalendar();
     }
 
-    if (changedProperties.has('activeDate')) {
-      this.calendarActiveDate = convertStringToNumberArray(this.activeDate as string, '/');
+    if (changedProperties.has("activeDate")) {
+      this.calendarActiveDate = convertStringToNumberArray(
+        this.activeDate as string,
+        "/"
+      );
     }
 
     super.update(changedProperties);
   }
 
   protected calculateCalendar(): number[][] {
-    this._log('calculateCalendar');
+    this._log("calculateCalendar");
 
-    const newDate = this.convertToGregorian(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], 1);
+    const newDate = this.convertToGregorian(
+      this.calendarOnScreenDate[0],
+      this.calendarOnScreenDate[1],
+      1
+    );
     let date = new Date(newDate[0], newDate[1] - 1, newDate[2]);
 
-    const currentMonthDaysCount = this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] + (
-      this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex
+    const currentMonthDaysCount =
+      this.monthsDaysCount[this.calendarOnScreenDate[1] - 1] +
+      (this.calendarOnScreenDate[1] - 1 === this.leapMonthIndex
         ? this.leapYearCalculation(this.calendarOnScreenDate[0])
-        : 0
-    );
+        : 0);
 
     let tempYear = this.calendarOnScreenDate[0];
     let previousMonthIndex: number = this.calendarOnScreenDate[1] - 2;
@@ -127,8 +163,11 @@ export class SolarCalendarElement extends CalendarBaseElement {
       }
       previousMonthIndex = 11;
     }
-    const previousMonthDaysCount = this.monthsDaysCount[previousMonthIndex] + (previousMonthIndex === this.leapMonthIndex ? this.leapYearCalculation(tempYear) : 0);
-
+    const previousMonthDaysCount =
+      this.monthsDaysCount[previousMonthIndex] +
+      (previousMonthIndex === this.leapMonthIndex
+        ? this.leapYearCalculation(tempYear)
+        : 0);
 
     const startWeekAtIndex = date.getDay();
     // We need to find index of day in the jalali week days
@@ -139,15 +178,23 @@ export class SolarCalendarElement extends CalendarBaseElement {
 
     const totalCells = currentMonthDaysCount + startWeekAtIndexInJalali;
     const calendar: Array<number[]> = [];
-    let week = Array.from({ length: startWeekAtIndexInJalali }, (_v, k) => (previousMonthDaysCount - startWeekAtIndexInJalali) + k + 1);
+    let week = Array.from(
+      { length: startWeekAtIndexInJalali },
+      (_v, k) => previousMonthDaysCount - startWeekAtIndexInJalali + k + 1
+    );
 
     for (let i = startWeekAtIndexInJalali + 1; calendar.length < 6; ++i) {
-      const day = i > totalCells ? i - totalCells : i - startWeekAtIndexInJalali;
+      const day =
+        i > totalCells ? i - totalCells : i - startWeekAtIndexInJalali;
       if (i % 7 === 0) {
         week.push(day);
         calendar.push(week);
         week = [];
-        if ((this.onlyShowCurrentMonthDays || this.hideLastFadedRow) && 7 * calendar.length >= totalCells) break;
+        if (
+          (this.onlyShowCurrentMonthDays || this.hideLastFadedRow) &&
+          7 * calendar.length >= totalCells
+        )
+          break;
         continue;
       }
       week.push(day);
@@ -156,8 +203,12 @@ export class SolarCalendarElement extends CalendarBaseElement {
     return calendar;
   }
 
-  private convertToGregorian(year: number, month: number, day: number): number[] {
-    this._log('convertToGregorian');
+  private convertToGregorian(
+    year: number,
+    month: number,
+    day: number
+  ): number[] {
+    this._log("convertToGregorian");
 
     let gregorianYear;
     if (year > 979) {
@@ -167,22 +218,23 @@ export class SolarCalendarElement extends CalendarBaseElement {
       gregorianYear = 621;
     }
 
-    let days = (365 * year) +
-      (Math.floor(year / 33) * 8) +
-      (((year % 33) + 3) / 4) +
+    let days =
+      365 * year +
+      Math.floor(year / 33) * 8 +
+      ((year % 33) + 3) / 4 +
       78 +
       day +
-      (((month < 7) ? (month - 1) * 31 : (((month - 7) * 30) + 186)));
+      (month < 7 ? (month - 1) * 31 : (month - 7) * 30 + 186);
 
-    gregorianYear += 400 * (Math.floor(days / 146097));
+    gregorianYear += 400 * Math.floor(days / 146097);
 
     days %= 146097;
     if (Math.floor(days) > 36524) {
-      gregorianYear += 100 * (Math.floor(--days / 36524));
+      gregorianYear += 100 * Math.floor(--days / 36524);
       days %= 36524;
       if (days >= 365) days++;
     }
-    gregorianYear += 4 * (Math.floor(days / 1461));
+    gregorianYear += 4 * Math.floor(days / 1461);
     days %= 1461;
     gregorianYear += Math.floor((days - 1) / 365);
 
@@ -191,7 +243,10 @@ export class SolarCalendarElement extends CalendarBaseElement {
     let montDays = [
       0,
       31,
-      (((gregorianYear % 4 === 0) && (gregorianYear % 100 !== 0)) || (gregorianYear % 400 === 0)) ? 29 : 28,
+      (gregorianYear % 4 === 0 && gregorianYear % 100 !== 0) ||
+      gregorianYear % 400 === 0
+        ? 29
+        : 28,
       31,
       30,
       31,
@@ -201,7 +256,7 @@ export class SolarCalendarElement extends CalendarBaseElement {
       30,
       31,
       30,
-      31
+      31,
     ];
 
     let index = 0;
@@ -214,40 +269,40 @@ export class SolarCalendarElement extends CalendarBaseElement {
   }
 
   protected leapYearCalculation(year: number): number {
-    this._log('Persian-calendar: leapYearCalculation');
+    this._log("Persian-calendar: leapYearCalculation");
     return [1, 5, 9, 13, 17, 22, 26, 30].indexOf(year % 33) > -1 ? 1 : 0;
   }
 
   prevMonth() {
-    this._log('prevMonth');
+    this._log("prevMonth");
 
     super.prevMonth();
-    this._fire('date-changed', this.calendarOnScreenDate.join('/'), true);
+    this._fire("date-changed", this.calendarOnScreenDate.join("/"), true);
   }
 
   nextMonth() {
-    this._log('nextMonth');
+    this._log("nextMonth");
 
     super.nextMonth();
-    this._fire('date-changed', this.calendarOnScreenDate.join('/'), true);
+    this._fire("date-changed", this.calendarOnScreenDate.join("/"), true);
   }
 
   prevYear() {
-    this._log('prevYear');
+    this._log("prevYear");
 
     super.prevYear();
-    this._fire('date-changed', this.calendarOnScreenDate.join('/'), true);
+    this._fire("date-changed", this.calendarOnScreenDate.join("/"), true);
   }
 
   nextYear() {
-    this._log('nextYear');
+    this._log("nextYear");
 
     super.nextYear();
-    this._fire('date-changed', this.calendarOnScreenDate.join('/'), true);
+    this._fire("date-changed", this.calendarOnScreenDate.join("/"), true);
   }
 
   protected calculateCalendarWeekList() {
-    this._log('calculateCalendarWeekList');
+    this._log("calculateCalendarWeekList");
 
     this.calendarWeekList = this.calculateCalendar();
     super.calculateCalendarWeekList();
