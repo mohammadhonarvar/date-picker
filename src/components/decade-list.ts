@@ -1,8 +1,8 @@
-import { html, customElement, TemplateResult, property, css } from 'lit-element';
+import { html, css, TemplateResult } from "lit";
+import { customElement, property } from "lit/decorators.js";
+import { BaseElement } from "../base-element";
 
-import { BaseElement } from '../base-element';
-
-@customElement('decade-list')
+@customElement("decade-list")
 export class DecadeList extends BaseElement {
   @property({ type: Number })
   currentYear: number | undefined;
@@ -29,13 +29,13 @@ export class DecadeList extends BaseElement {
       padding: 10px 16px;
       font-weight: 500;
       margin: 4px;
-      color: rgba(0, 0, 0, 0.60);
+      color: rgba(0, 0, 0, 0.6);
       cursor: pointer;
     }
 
     .decade-button:hover {
-      background-color: rgba(var(--theme-primary-color) ,0.09);
-      color: rgba(var(--theme-on-background-color), 0.60);
+      background-color: rgba(var(--theme-primary-color), 0.09);
+      color: rgba(var(--theme-on-background-color), 0.6);
     }
 
     [active] {
@@ -45,24 +45,24 @@ export class DecadeList extends BaseElement {
   `;
 
   disconnectedCallback() {
-    document.removeEventListener('current-year-changed', this.onCurrentYearChanged.bind(this));
+    document.removeEventListener(
+      "current-year-changed",
+      this.onCurrentYearChanged.bind(this)
+    );
     super.disconnectedCallback();
   }
 
   constructor() {
     super();
-    document.addEventListener('current-year-changed', this.onCurrentYearChanged.bind(this));
+    document.addEventListener(
+      "current-year-changed",
+      this.onCurrentYearChanged.bind(this)
+    );
   }
 
   protected shouldUpdate(): boolean {
-    this._log('shouldUpdate');
-    if (
-      !(
-        this.currentYear &&
-        this.minYear &&
-        this.maxYear
-      )
-    ) {
+    this._log("shouldUpdate");
+    if (!(this.currentYear && this.minYear && this.maxYear)) {
       return false;
     }
 
@@ -70,9 +70,9 @@ export class DecadeList extends BaseElement {
   }
 
   protected update(changedProperties: Map<string | number | symbol, unknown>) {
-    this._log('update');
+    this._log("update");
 
-    if (changedProperties.has('minYear') || changedProperties.has('maxYear')) {
+    if (changedProperties.has("minYear") || changedProperties.has("maxYear")) {
       this.createDedcadeList(this.minYear as number, this.maxYear as number);
     }
 
@@ -80,80 +80,89 @@ export class DecadeList extends BaseElement {
   }
 
   protected render(): TemplateResult {
-    this._log('render');
+    this._log("render");
 
     const year = this.currentYear as number;
-    const decadeStart = year - year % 10;
-    let targeIndex = this.decadeList.findIndex(item => item[0] === decadeStart);
+    const decadeStart = year - (year % 10);
+    let targeIndex = this.decadeList.findIndex(
+      (item) => item[0] === decadeStart
+    );
     // It will happen when the user select the maxYear
     if (targeIndex === -1) {
-      targeIndex = this.decadeList.findIndex(item => item[1] === decadeStart);
+      targeIndex = this.decadeList.findIndex((item) => item[1] === decadeStart);
     }
     this.activeDecade = this.decadeList[targeIndex];
 
     if (targeIndex === 0) {
-      return html`
-        ${(this.decadeList as number[][]).slice(0, 3).map(decade => {
-        return html`
+      return html` ${(this.decadeList as number[][])
+        .slice(0, 3)
+        .map((decade) => {
+          return html`
             <div
               class="decade-button"
               ?active="${decade[0] === decadeStart}"
-              @click="${() => { this._fire('decade-changed-to', decade); }}"
+              @click="${() => {
+                this._fire("decade-changed-to", decade);
+              }}"
             >
               <div>${decade[0]}-${decade[1]}</div>
             </div>
-            `
-      })
-        }`;
+          `;
+        })}`;
     }
 
     if (targeIndex === this.decadeList.length - 1) {
-      return html`
-        ${(this.decadeList as number[][]).slice(this.decadeList.length - 3).map(decade => {
-        return html`
+      return html` ${(this.decadeList as number[][])
+        .slice(this.decadeList.length - 3)
+        .map((decade) => {
+          return html`
             <div
               class="decade-button"
-              ?active="${decade[0] === decadeStart || decade[1] === this.maxYear}"
-              @click="${() => { this._fire('decade-changed-to', decade); }}"
+              ?active="${decade[0] === decadeStart ||
+              decade[1] === this.maxYear}"
+              @click="${() => {
+                this._fire("decade-changed-to", decade);
+              }}"
             >
               <div>${decade[0]}-${decade[1]}</div>
             </div>
-            `
-      })
-        }`;
+          `;
+        })}`;
     }
 
-    return html`
-      ${(this.decadeList as number[][]).slice(targeIndex - 1, targeIndex + 2).map(decade => {
-      return html`
+    return html` ${(this.decadeList as number[][])
+      .slice(targeIndex - 1, targeIndex + 2)
+      .map((decade) => {
+        return html`
           <div
             class="decade-button"
             ?active="${decade[0] === decadeStart}"
-            @click="${() => { this._fire('decade-changed-to', decade); }}"
+            @click="${() => {
+              this._fire("decade-changed-to", decade);
+            }}"
           >
             <div>${decade[0]}-${decade[1]}</div>
           </div>
-          `
-    })
-      }`;
+        `;
+      })}`;
   }
 
   protected updated() {
-    this._log('updated');
-    this._fire('decade-changed', this.activeDecade);
+    this._log("updated");
+    this._fire("decade-changed", this.activeDecade);
   }
 
   private onCurrentYearChanged(event: Event | CustomEvent) {
-    this._log('onCurrentYearChanged');
+    this._log("onCurrentYearChanged");
 
     event.stopPropagation();
-    if (!event['detail']) return;
+    if (!event["detail"]) return;
     const _event = event as CustomEvent;
     this.currentYear = _event.detail;
   }
 
   private createDedcadeList(minYear: number, maxYear: number) {
-    this._log('createDedcadeList');
+    this._log("createDedcadeList");
 
     if (minYear + 9 > maxYear) {
       this.decadeList.push([minYear, maxYear]);
@@ -170,10 +179,7 @@ export class DecadeList extends BaseElement {
 
     for (let i = 1; i < decadeCount; i++) {
       const startCurrentDedcade = this.decadeList[i - 1][1] + 1;
-      const dedcade = [
-        startCurrentDedcade,
-        startCurrentDedcade + 9
-      ];
+      const dedcade = [startCurrentDedcade, startCurrentDedcade + 9];
       this.decadeList.push(dedcade);
     }
 
@@ -183,6 +189,5 @@ export class DecadeList extends BaseElement {
     }
 
     this.decadeList[this.decadeList.length - 1][1] = maxYear;
-
   }
 }
