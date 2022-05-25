@@ -7,7 +7,7 @@ export const weekDayList = [
   { name: 'Wed', shortName: 'W' },
   { name: 'Thu', shortName: 'T' },
   { name: 'Fri', shortName: 'F' },
-  { name: 'Sat', shortName: 'S' }
+  { name: 'Sat', shortName: 'S' },
 ];
 
 export const monthList = [
@@ -22,5 +22,5 @@ export const monthList = [
   { name: 'September', shortName: 'Sep', code: 5 },
   { name: 'October', shortName: 'Oct', code: 0 },
   { name: 'November', shortName: 'Nov', code: 3 },
-  { name: 'December', shortName: 'Dec', code: 5 }
+  { name: 'December', shortName: 'Dec', code: 5 },
 ];

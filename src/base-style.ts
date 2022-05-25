@@ -1,4 +1,4 @@
-import { css } from "lit";
+import { css } from 'lit';
 
 export const calendarBaseStyle = css`
   :host {
@@ -66,7 +66,7 @@ export const calendarBaseStyle = css`
   }
 
   .calendar-row .calendar-day::after {
-    content: "";
+    content: '';
     float: left;
     display: block;
     padding-top: 100%;
@@ -105,7 +105,7 @@ export const calendarBaseStyle = css`
   }
 
   .calendar-row .in-range-day,
-  .calendar-day-data[data-range-edge="true"],
+  .calendar-day-data[data-range-edge='true'],
   .calendar-day-data[data-start-range-edge] {
     transition: ease-in 0.15s;
   }

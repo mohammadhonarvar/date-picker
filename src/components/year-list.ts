@@ -1,9 +1,9 @@
-import { html, css, TemplateResult } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { html, css, TemplateResult, PropertyValues } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-import { BaseElement } from "../base-element";
+import { BaseElement } from '../base-element';
 
-@customElement("year-list")
+@customElement('year-list')
 export class YearList extends BaseElement {
   @property({ type: Number })
   currentYear: number | undefined;
@@ -47,24 +47,18 @@ export class YearList extends BaseElement {
     }
   `;
 
-  disconnectedCallback() {
-    document.removeEventListener(
-      "current-year-changed",
-      this.onCurrentYearChanged.bind(this)
-    );
+  constructor() {
+    super();
+    document.addEventListener('current-year-changed', this.onCurrentYearChanged.bind(this));
+  }
+
+  disconnectedCallback(): void {
+    document.removeEventListener('current-year-changed', this.onCurrentYearChanged.bind(this));
     super.disconnectedCallback();
   }
 
-  constructor() {
-    super();
-    document.addEventListener(
-      "current-year-changed",
-      this.onCurrentYearChanged.bind(this)
-    );
-  }
-
   protected shouldUpdate(): boolean {
-    this._log("shouldUpdate");
+    this._log('shouldUpdate');
     if (!(this.currentYear && this.minYear && this.maxYear)) {
       return false;
     }
@@ -72,10 +66,10 @@ export class YearList extends BaseElement {
     return true;
   }
 
-  protected update(changedProperties: Map<string | number | symbol, unknown>) {
-    this._log("update");
+  protected update(changedProperties: PropertyValues): void {
+    this._log('update');
 
-    if (changedProperties.has("currentYear")) {
+    if (changedProperties.has('currentYear')) {
       this.calculateYearList();
     }
 
@@ -83,16 +77,16 @@ export class YearList extends BaseElement {
   }
 
   protected render(): TemplateResult {
-    this._log("render");
+    this._log('render');
 
     return html` ${(this.yearList as number[]).map((year) => {
       return html`
         <div
           class="year-button"
           ?active="${this.activeYear === year}"
-          @click="${() => {
+          @click="${(): void => {
             this.activeYear = year;
-            this._fire("year-changed-to", year);
+            this._fire('year-changed-to', year);
           }}"
         >
           <div>${year}</div>
@@ -101,17 +95,17 @@ export class YearList extends BaseElement {
     })}`;
   }
 
-  private onCurrentYearChanged(event: Event | CustomEvent) {
-    this._log("onCurrentYearChanged");
+  private onCurrentYearChanged(event: Event | CustomEvent): void {
+    this._log('onCurrentYearChanged');
 
     event.stopPropagation();
-    if (!event["detail"]) return;
+    if (!event['detail']) return;
     const _event = event as CustomEvent;
     this.currentYear = this.activeYear = _event.detail;
   }
 
-  private calculateYearList() {
-    this._log("calculateYearList");
+  private calculateYearList(): void {
+    this._log('calculateYearList');
 
     const currentYear = this.currentYear as number;
     const minYear = this.minYear as number;
@@ -123,33 +117,21 @@ export class YearList extends BaseElement {
 
     if (currentYear === maxYear) {
       decade = maxYear - 10;
-      this.yearList = Array.from(
-        { length: 11 },
-        (_item, index) => decade + index
-      );
+      this.yearList = Array.from({ length: 11 }, (_item, index) => decade + index);
       return;
     }
 
     if (maxYear - decade === 10) {
-      this.yearList = Array.from(
-        { length: 11 },
-        (_item, index) => decade + index
-      );
+      this.yearList = Array.from({ length: 11 }, (_item, index) => decade + index);
       return;
     }
 
     if (decade + 9 > maxYear) {
-      this.yearList = Array.from(
-        { length: maxYear - currentYear + 1 },
-        (_item, index) => decade + index
-      );
+      this.yearList = Array.from({ length: maxYear - currentYear + 1 }, (_item, index) => decade + index);
       return;
     }
 
-    this.yearList = Array.from(
-      { length: 10 },
-      (_item, index) => decade + index
-    );
+    this.yearList = Array.from({ length: 10 }, (_item, index) => decade + index);
     this.activeYear = currentYear;
   }
 }

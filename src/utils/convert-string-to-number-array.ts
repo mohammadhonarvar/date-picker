@@ -6,4 +6,4 @@ export const convertStringToNumberArray = (str: string, separator: string): numb
     numberArray.push(parseInt(item));
   }
   return numberArray;
-}
+};
