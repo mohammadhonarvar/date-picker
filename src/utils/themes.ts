@@ -1,4 +1,4 @@
-import { css } from "lit";
+import { css } from 'lit';
 
 // This is the base dimensions(for example, if we need it)
 export const appConfig = {
@@ -24,8 +24,8 @@ export const styleConfig = css`
     --theme-background-color: #ffffff;
     --dark-background-color: #121212;
 
-    --font-family: "Iran Sans", "Open Sans", "Tahoma", sans-serif,
-      "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    --font-family: 'Iran Sans', 'Open Sans', 'Tahoma', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+      'Segoe UI Symbol';
 
     --icon-size: ${appConfig.iconSize}px;
     --icon-button-size: ${appConfig.iconButtonSize}px;

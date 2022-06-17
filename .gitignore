@@ -16,7 +16,8 @@ npm-debug.log*
 
 # Compiled
 /js
-/build
+/server
+# /build
 /dist
 /data/**/*.js
 .tsbuildinfo

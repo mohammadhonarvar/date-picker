@@ -1,19 +1,19 @@
-import { html, css, TemplateResult } from "lit";
-import { customElement, property } from "lit/decorators.js";
-import { BaseElement } from "../base-element";
+import { html, css, TemplateResult } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { BaseElement } from '../base-element';
 
 interface WeekLabelInterface {
   name: string;
   shortName: string;
 }
 
-@customElement("week-labels")
+@customElement('week-labels')
 export class WeekLabelList extends BaseElement {
   @property({ type: Array })
   weekLabelList: WeekLabelInterface[] | undefined;
 
-  @property({ type: Boolean, attribute: "short-name" })
-  useShortName: boolean = false;
+  @property({ type: Boolean, attribute: 'short-name' })
+  useShortName: boolean;
 
   static styles = css`
     :host {
@@ -33,7 +33,7 @@ export class WeekLabelList extends BaseElement {
     }
 
     .week-day::after {
-      content: "";
+      content: '';
       float: left;
       display: block;
       padding-top: 100%;
@@ -51,24 +51,25 @@ export class WeekLabelList extends BaseElement {
     }
   `;
 
+  constructor() {
+    super();
+    this.useShortName = false;
+  }
+
   protected shouldUpdate(): boolean {
-    this._log("shouldUpdate");
+    this._log('shouldUpdate');
     return Array.isArray(this.weekLabelList) && this.weekLabelList.length > 0;
   }
 
   protected render(): TemplateResult {
-    this._log("render");
+    this._log('render');
 
-    return html` ${(this.weekLabelList as WeekLabelInterface[]).map(
-      (week: WeekLabelInterface) => {
-        return html`
-          <div class="week-day">
-            <div class="week-day-data">
-              ${this.useShortName ? week.shortName : week.name}
-            </div>
-          </div>
-        `;
-      }
-    )}`;
+    return html` ${(this.weekLabelList as WeekLabelInterface[]).map((week: WeekLabelInterface) => {
+      return html`
+        <div class="week-day">
+          <div class="week-day-data">${this.useShortName ? week.shortName : week.name}</div>
+        </div>
+      `;
+    })}`;
   }
 }

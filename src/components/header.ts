@@ -1,18 +1,18 @@
-import { html, css, TemplateResult } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { html, css, TemplateResult } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-import { BaseElement } from "../base-element";
-import { arrowBackward, arrowForward } from "../utils/icon";
+import { BaseElement } from '../base-element';
+import { arrowBackward, arrowForward } from '../utils/icon';
 
-@customElement("header-element")
+@customElement('header-element')
 export class HeaderElement extends BaseElement {
   @property({ type: String })
-  title: string = "";
+  headerTitle: string | undefined;
 
-  @property({ type: Boolean, attribute: "disable" })
-  disableNavigation: boolean = false;
+  @property({ type: Boolean, attribute: 'disable' })
+  disableNavigation: boolean;
 
-  calendarActiveView: string = "calendar";
+  calendarActiveView: string;
 
   // FIX THEME & CSS VARs
   static styles = css`
@@ -52,96 +52,95 @@ export class HeaderElement extends BaseElement {
     }
   `;
 
+  constructor() {
+    super();
+    this.calendarActiveView = 'calendar';
+    this.headerTitle = '';
+    this.disableNavigation = false;
+  }
+
   protected render(): TemplateResult {
-    this._log("render: %s", this.calendarActiveView);
+    this._log('render: %s', this.calendarActiveView);
 
     return html`
-      <div
-        class="previous"
-        ?hidden="${this.disableNavigation}"
-        @click="${this.onPrevArrowClick}"
-      >
+      <div class="previous" ?hidden="${this.disableNavigation}" @click="${this.onPrevArrowClick}">
         ${arrowBackward}
       </div>
-      <p @click=${this.onTitleClick}>${this.title}</p>
-      <div
-        class="next"
-        ?hidden="${this.disableNavigation}"
-        @click="${this.onNextArrowClick}"
-      >
+      <p @click=${this.onTitleClick}>${this.headerTitle}</p>
+      <div class="next" ?hidden="${this.disableNavigation}" @click="${this.onNextArrowClick}">
         ${arrowForward}
       </div>
     `;
   }
 
-  private onTitleClick() {
-    this._log("onTitleClick");
+  private onTitleClick(): void {
+    this._log('onTitleClick');
 
     switch (this.calendarActiveView) {
-      case "calendar":
-        this._fire("show-month-list", undefined);
+      case 'calendar':
+        this._fire('show-month-list', undefined);
         break;
 
-      case "monthList":
-        this._fire("show-year-list", undefined);
+      case 'monthList':
+        this._fire('show-year-list', undefined);
         break;
 
-      case "yearList":
-        this._fire("show-decade-list", undefined);
+      case 'yearList':
+        this._fire('show-decade-list', undefined);
         break;
 
-      case "decadeList":
-        this._fire("show-year-list", undefined);
+      case 'decadeList':
+        this._fire('show-year-list', undefined);
         break;
 
       default:
-        this._warn("Invalid view");
+        this._warn('Invalid view');
         break;
     }
   }
 
-  private onPrevArrowClick() {
-    this._log("onPrevArrowClick");
+  private onPrevArrowClick(): void {
+    this._log('onPrevArrowClick');
 
     switch (this.calendarActiveView) {
-      case "calendar":
-        this._fire("prev-month", undefined);
+      case 'calendar':
+        this._fire('prev-month', undefined);
         break;
 
-      case "monthList":
-        this._fire("prev-year", undefined);
+      case 'monthList':
+        this._fire('prev-year', undefined);
         break;
 
-      case "yearList":
-      case "decadeList":
-        this._fire("prev-decade", undefined);
+      case 'yearList':
+      case 'decadeList':
+        this._fire('prev-decade', undefined);
         break;
 
       default:
-        this._warn("Invalid view");
+        this._warn('Invalid view');
         break;
     }
   }
 
-  private onNextArrowClick() {
-    this._log("onNextArrowClick");
+  private onNextArrowClick(): void {
+    this._log('onNextArrowClick');
 
     switch (this.calendarActiveView) {
-      case "calendar":
-        this._fire("next-month", undefined);
+      case 'calendar':
+        this._fire('next-month', undefined);
         break;
 
-      case "monthList":
-        this._fire("next-year", undefined);
+      case 'monthList':
+        this._fire('next-year', undefined);
         break;
 
-      case "yearList":
-      case "decadeList":
-        this._fire("next-decade", undefined);
+      case 'yearList':
+      case 'decadeList':
+        this._fire('next-decade', undefined);
         break;
 
       default:
-        this._warn("Invalid view");
+        this._warn('Invalid view');
         break;
     }
   }
