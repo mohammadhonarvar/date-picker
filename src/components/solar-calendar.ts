@@ -1,7 +1,9 @@
 import { css, PropertyValues } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
+import { convertToGregorian } from '../utils/convert-to-gregorian';
 import CalendarBaseElement from './calendar-base';
+import type { DateChangeEventDetailInterface } from './calendar-base';
 import { calendarBaseStyle } from '../base-style';
 
 import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
@@ -10,7 +12,7 @@ import { convertStringToNumberArray } from '../utils/convert-string-to-number-ar
 import { weekDayList, monthsDaysCount, monthList } from '../data/solar';
 
 /**
- * @fires {CustomEvent} date-changed
+ * @fires {CustomEvent<DateChangeEventDetailInterface>} date-changed
  */
 @customElement('solar-calendar-element')
 export class SolarCalendarElement extends CalendarBaseElement {
@@ -131,7 +133,7 @@ export class SolarCalendarElement extends CalendarBaseElement {
   protected calculateCalendar(): number[][] {
     this._log('calculateCalendar');
 
-    const newDate = this.convertToGregorian(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], 1);
+    const newDate = convertToGregorian(this.calendarOnScreenDate[0], this.calendarOnScreenDate[1], 1);
     const date = new Date(newDate[0], newDate[1] - 1, newDate[2]);
 
     const currentMonthDaysCount =
@@ -183,64 +185,6 @@ export class SolarCalendarElement extends CalendarBaseElement {
     return calendar;
   }
 
-  private convertToGregorian(year: number, month: number, day: number): number[] {
-    this._log('convertToGregorian');
-
-    let gregorianYear;
-    if (year > 979) {
-      gregorianYear = 1600;
-      year -= 979;
-    } else {
-      gregorianYear = 621;
-    }
-
-    let days =
-      365 * year +
-      Math.floor(year / 33) * 8 +
-      ((year % 33) + 3) / 4 +
-      78 +
-      day +
-      (month < 7 ? (month - 1) * 31 : (month - 7) * 30 + 186);
-
-    gregorianYear += 400 * Math.floor(days / 146097);
-
-    days %= 146097;
-    if (Math.floor(days) > 36524) {
-      gregorianYear += 100 * Math.floor(--days / 36524);
-      days %= 36524;
-      if (days >= 365) days++;
-    }
-    gregorianYear += 4 * Math.floor(days / 1461);
-    days %= 1461;
-    gregorianYear += Math.floor((days - 1) / 365);
-
-    if (days > 365) days = (days - 1) % 365;
-    let gregorianDay = Math.floor(days + 1);
-    const montDays = [
-      0,
-      31,
-      (gregorianYear % 4 === 0 && gregorianYear % 100 !== 0) || gregorianYear % 400 === 0 ? 29 : 28,
-      31,
-      30,
-      31,
-      30,
-      31,
-      31,
-      30,
-      31,
-      30,
-      31,
-    ];
-
-    let index = 0;
-    for (; index <= 12; index++) {
-      if (gregorianDay <= montDays[index]) break;
-      gregorianDay -= montDays[index];
-    }
-
-    return [gregorianYear, index, gregorianDay];
-  }
-
   protected leapYearCalculation(year: number): number {
     this._log('Persian-calendar: leapYearCalculation');
     return [1, 5, 9, 13, 17, 22, 26, 30].indexOf(year % 33) > -1 ? 1 : 0;
@@ -279,5 +223,23 @@ export class SolarCalendarElement extends CalendarBaseElement {
 
     this.calendarWeekList = this.calculateCalendar();
     super.calculateCalendarWeekList();
+  }
+
+  protected override onDayClick(event: MouseEvent): void {
+    super.onDayClick(event);
+
+    const currentDate = event.currentTarget?.['date'] as number[];
+    if (!currentDate) return;
+
+    const gregorianDate = convertToGregorian(currentDate[0], currentDate[1], currentDate[2]).join('/');
+    this._fire<DateChangeEventDetailInterface>(
+      'date-changed',
+      {
+        gregorianDate,
+        unixTime: new Date(gregorianDate).getTime(),
+        solarDate: currentDate.join('/'),
+      },
+      true,
+    );
   }
 }

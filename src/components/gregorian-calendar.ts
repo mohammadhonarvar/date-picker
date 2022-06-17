@@ -2,6 +2,7 @@ import { css, PropertyValues } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import CalendarBaseElement from './calendar-base';
+import type { DateChangeEventDetailInterface } from './calendar-base';
 import { calendarBaseStyle } from '../base-style';
 import { convertStringToNumberArray } from '../utils/convert-string-to-number-array';
 
@@ -9,7 +10,7 @@ import { convertStringToNumberArray } from '../utils/convert-string-to-number-ar
 import { weekDayList, monthsDaysCount, monthList } from '../data/gregorian';
 
 /**
- * @fires {CustomEvent} date-changed
+ * @fires {CustomEvent<DateChangeEventDetailInterface>} date-changed
  */
 @customElement('gregorian-calendar-element')
 export class GregorianCalendarElement extends CalendarBaseElement {
@@ -212,5 +213,22 @@ export class GregorianCalendarElement extends CalendarBaseElement {
 
     this.calendarWeekList = this.calculateCalendar();
     super.calculateCalendarWeekList();
+  }
+
+  protected override onDayClick(event: MouseEvent): void {
+    super.onDayClick(event);
+
+    const currentDate = event.currentTarget?.['date'] as number[];
+    if (!currentDate) return;
+
+    const gregorianDate = currentDate.join('/');
+    this._fire<DateChangeEventDetailInterface>(
+      'date-changed',
+      {
+        gregorianDate,
+        unixTime: new Date(gregorianDate).getTime(),
+      },
+      true,
+    );
   }
 }
