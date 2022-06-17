@@ -47,6 +47,11 @@ export class HeaderElement extends BaseElement {
       background-color: rgba(var(--theme-primary-color), 0.09);
     }
 
+    :host([dir='rtl']) .previous,
+    :host([dir='rtl']) .next {
+      transform: rotate(180deg);
+    }
+
     [hidden] {
       display: none;
     }
