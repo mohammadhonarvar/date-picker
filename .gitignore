@@ -15,11 +15,11 @@ logs
 npm-debug.log*
 
 # Compiled
-/js
-/server
-# /build
-/dist
-/data/**/*.js
+js
+server
+build
+dist
+data/**/*.js
 .tsbuildinfo
 
 # Optional npm cache directory
