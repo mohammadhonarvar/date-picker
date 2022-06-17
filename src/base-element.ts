@@ -1,18 +1,30 @@
-import { LitElement } from 'lit';
+import { LitElement, PropertyValues } from 'lit';
 import { property } from 'lit/decorators.js';
 
 export abstract class BaseElement extends LitElement {
   @property({ type: Boolean, reflect: true })
   debug: boolean;
 
+  @property({ type: String, reflect: true })
+  dir: string;
+
   constructor() {
     super();
     this.debug = false;
+    // eslint-disable-next-line wc/no-constructor-attributes
+    this.dir = '';
   }
 
   protected async performUpdate(): Promise<unknown> {
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     return super.performUpdate();
+  }
+
+  protected firstUpdated(changedProperties: PropertyValues): void {
+    super.firstUpdated(changedProperties);
+
+    this._log('firstUpdated');
+    this.dir = document.documentElement.getAttribute('dir') || 'ltr';
   }
 
   private __logger(logLevel: string, message: unknown, ...restParam: unknown[]): void {
