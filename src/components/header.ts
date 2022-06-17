@@ -4,6 +4,17 @@ import { customElement, property } from 'lit/decorators.js';
 import { BaseElement } from '../base-element';
 import { arrowBackward, arrowForward } from '../utils/icon';
 
+/**
+ * @fires {CustomEvent} show-month-list
+ * @fires {CustomEvent} show-year-list
+ * @fires {CustomEvent} show-decade-list
+ * @fires {CustomEvent} prev-month
+ * @fires {CustomEvent} next-month
+ * @fires {CustomEvent} prev-year
+ * @fires {CustomEvent} next-year
+ * @fires {CustomEvent} prev-decade
+ * @fires {CustomEvent} next-decade
+ */
 @customElement('header-element')
 export class HeaderElement extends BaseElement {
   @property({ type: String })

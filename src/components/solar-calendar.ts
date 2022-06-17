@@ -9,6 +9,9 @@ import { convertStringToNumberArray } from '../utils/convert-string-to-number-ar
 // This class is based on gregorian, then we can use the following:
 import { weekDayList, monthsDaysCount, monthList } from '../data/solar';
 
+/**
+ * @fires {CustomEvent} date-changed
+ */
 @customElement('solar-calendar-element')
 export class SolarCalendarElement extends CalendarBaseElement {
   protected leapMonthIndex: number;

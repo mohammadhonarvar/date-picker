@@ -8,6 +8,9 @@ import { convertStringToNumberArray } from '../utils/convert-string-to-number-ar
 // This class is based on gregorian, then we can use the following:
 import { weekDayList, monthsDaysCount, monthList } from '../data/gregorian';
 
+/**
+ * @fires {CustomEvent} date-changed
+ */
 @customElement('gregorian-calendar-element')
 export class GregorianCalendarElement extends CalendarBaseElement {
   protected leapMonthIndex: number;

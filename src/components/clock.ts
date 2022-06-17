@@ -5,6 +5,9 @@ import { addLeadingZero } from '../utils/add-leading-zero';
 
 const currentDate = new Date();
 
+/**
+ * @fires {CustomEvent} time-changed
+ */
 @customElement('clock-element')
 export class ClockElement extends BaseElement {
   @property({ type: String })

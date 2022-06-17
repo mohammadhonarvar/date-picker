@@ -2,6 +2,9 @@ import { html, css, TemplateResult, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { BaseElement } from '../base-element';
 
+/**
+ * @fires {CustomEvent} decade-changed-to
+ */
 @customElement('decade-list')
 export class DecadeList extends BaseElement {
   @property({ type: Number })

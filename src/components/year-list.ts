@@ -3,6 +3,9 @@ import { customElement, property } from 'lit/decorators.js';
 
 import { BaseElement } from '../base-element';
 
+/**
+ * @fires {CustomEvent} year-changed-to
+ */
 @customElement('year-list')
 export class YearList extends BaseElement {
   @property({ type: Number })

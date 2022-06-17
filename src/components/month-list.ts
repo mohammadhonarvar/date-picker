@@ -8,6 +8,9 @@ interface MonthLabelInterface {
   shortName: string;
 }
 
+/**
+ * @fires {CustomEvent} month-changed-to
+ */
 @customElement('month-list')
 export class MonthList extends BaseElement {
   @property({ type: Array })
