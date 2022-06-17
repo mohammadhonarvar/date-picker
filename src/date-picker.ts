@@ -113,3 +113,9 @@ export class DatePicker extends BaseElement {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'date-picker': DatePicker;
+  }
+}

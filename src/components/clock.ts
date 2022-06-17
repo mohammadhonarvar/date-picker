@@ -3,7 +3,7 @@ import { customElement, property, query, queryAll } from 'lit/decorators.js';
 import { BaseElement } from '../base-element';
 import { addLeadingZero } from '../utils/add-leading-zero';
 
-const dateNow = new Date();
+const currentDate = new Date();
 
 @customElement('clock-element')
 export class ClockElement extends BaseElement {
@@ -109,9 +109,9 @@ export class ClockElement extends BaseElement {
 
   constructor() {
     super();
-    this.time = `${addLeadingZero(dateNow.getHours())}:${addLeadingZero(
-      dateNow.getMinutes(),
-    )}:${addLeadingZero(dateNow.getSeconds())}`;
+    this.time = `${addLeadingZero(currentDate.getHours())}:${addLeadingZero(
+      currentDate.getMinutes(),
+    )}:${addLeadingZero(currentDate.getSeconds())}`;
 
     this.focusedInputIndex = -1;
     this.timeArray = this.time.split(':').map((item) => parseInt(item));
@@ -299,5 +299,11 @@ export class ClockElement extends BaseElement {
       (inputName === 'hour' && integerValue < 24 && integerValue > -1) ||
       ((inputName === 'minute' || inputName === 'second') && integerValue < 60 && integerValue > -1)
     );
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'clock-element': ClockElement;
   }
 }
